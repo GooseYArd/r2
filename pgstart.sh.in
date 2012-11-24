@@ -1,0 +1,5 @@
+include(`config.m4')dnl
+#!/bin/sh
+
+postgres -D MASTER_PGDATA > MASTER_PGDATA/logfile 2>&1 &
+#postgres -D STANDBY_PGDATA > STANDBY_PGDATA/logfile 2>&1 &
