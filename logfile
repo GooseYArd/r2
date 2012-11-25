@@ -1,1 +1,15 @@
-postgres cannot access the server configuration file "/home/bailey/r2/ROOT/install/data/postgresql.conf": No such file or directory
+LOG:  database system was shut down at 2012-11-25 14:11:03 GMT
+LOG:  autovacuum launcher started
+LOG:  database system is ready to accept connections
+LOG:  checkpoints are occurring too frequently (3 seconds apart)
+HINT:  Consider increasing the configuration parameter "checkpoint_segments".
+LOG:  checkpoints are occurring too frequently (4 seconds apart)
+HINT:  Consider increasing the configuration parameter "checkpoint_segments".
+LOG:  received SIGHUP, reloading configuration files
+LOG:  specifying both host name and CIDR mask is invalid: "PARTNER/32"
+CONTEXT:  line 5 of configuration file "/home/bailey/r2/install/data/pg_hba.conf"
+LOG:  specifying both host name and CIDR mask is invalid: "PARTNER/32"
+CONTEXT:  line 6 of configuration file "/home/bailey/r2/install/data/pg_hba.conf"
+LOG:  specifying both host name and CIDR mask is invalid: "PARTNER/32"
+CONTEXT:  line 7 of configuration file "/home/bailey/r2/install/data/pg_hba.conf"
+WARNING:  pg_hba.conf not reloaded

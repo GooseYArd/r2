@@ -1,5 +1,5 @@
 include(`config.m4')dnl
 #!/bin/sh
 
-pg_ctl -D MASTER_PGDATA stop
-pg_ctl -D STANDBY_PGDATA stop
+pg_ctl -D PGDATA stop
+

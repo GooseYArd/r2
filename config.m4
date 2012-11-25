@@ -1,3 +1,4 @@
 define(`ROOT', `/home/bailey/r2')dnl
-define(`MASTER_PGDATA', `master')dnl
-define(`STANDBY_PGDATA', `standby')dnl
+define(`PGDATA', `ROOT/install/data')dnl
+define(`PARTNER', `172.31.5.34')dnl
+
