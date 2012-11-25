@@ -1,5 +1,3 @@
-#include openssl.mak
-
 curl.version := 7.28.1
 curl.dir := curl-$(curl.version)
 curl.tgz := $(curl.dir).tar.bz2
@@ -10,10 +8,12 @@ curl.tgz := $(curl.dir).tar.bz2
 
 .curl.unpack: $(curl.tgz)
 	tar xvf $^ && touch $(CWD)/$@
+	
 
-.curl.config: .curl.unpack .ssl.install
+.curl.config: .curl.unpack .openssl.install
 	cd $(curl.dir) && \
-	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.curl.args)  && \
+	CFLAGS="$(CFLAGS) -DOPENSSL_NO_SSL2" CXXFLAGS="$(CFLAGS) -DOPENSSL_NO_SSL2" sh configure $(.curl.args)  && \
+	sed -i -e s/HAVE_SSLV2_CLIENT_METHOD\ 1/HAVE_SSLV2_CLIENT_METHOD\ 0/ lib/curl_config.h && \
 	touch $(CWD)/$@
 
 .curl.make: .curl.config

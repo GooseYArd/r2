@@ -8,7 +8,7 @@ readline.tgz := $(readline.dir).tar.gz
 .readline.unpack: $(readline.tgz)
 	tar xvf $^ && touch $(CWD)/$@
 
-.readline.config: .readline.unpack .ssl.install .ncurses.install
+.readline.config: .readline.unpack .openssl.install .ncurses.install
 	cd $(readline.dir) && \
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.readline.args)  && \
 	touch $(CWD)/$@
