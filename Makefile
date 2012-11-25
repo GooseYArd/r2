@@ -19,13 +19,20 @@ all: \
 	m4 $^ > $@
 	chmod +x $@
 
-%/postgresql.conf: postgresql.conf.%.in
+install/data/postgresql.conf: postgresql.conf.master.in
+	$(pfx)/bin/initdb -D $(CWD)/install/data --locale=en_US.UTF-8 --lc-messages=sv_SE.UTF-8
 	m4 $< > $@
+	$(pfx)/bin/postgres -D ROOT/install/data >logfile 2>&1 &
+	echo Waiting for database to come up
+	sleep 10
+	$(pfx)/bin/createuser --login --superuser --replication repmgr
+	$(pfx)/bin/createdb pgbench
+	$(pfx)/bin/pgbench -i -s 10 pgbench
 
 %/pg_hba.conf: pg_hba.conf.%.in
 	m4 $< > $@
 
-db.test: install/data/postgresql.conf install/data/pg_hba.conf
+db.test: install/data/postgresql.conf pgstart.sh pginit.sh pgstop.sh
 	touch db.test
 
 .db.clean: 
