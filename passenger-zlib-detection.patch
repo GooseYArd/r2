@@ -1,0 +1,11 @@
+--- ./install/lib/ruby/gems/1.9.1/gems/passenger-3.0.18/lib/phusion_passenger/dependencies.rb.orig	2012-11-24 17:23:45.748561439 -0500
++++ ./install/lib/ruby/gems/1.9.1/gems/passenger-3.0.18/lib/phusion_passenger/dependencies.rb	2012-11-24 17:26:44.036555640 -0500
+@@ -553,7 +553,7 @@
+ 					f.write("#include <zlib.h>")
+ 				end
+ 				Dir.chdir(File.dirname(source_file)) do
+-					if system("(g++ -c zlib-check.c) >/dev/null 2>/dev/null")
++                                        if system("(g++ #{ENV['CXXFLAGS']} -c zlib-check.c) >/dev/null 2>/dev/null")
+ 						result.found
+ 					else
+ 						result.not_found

@@ -10,7 +10,7 @@ ncurses.tgz := $(ncurses.dir).tar.gz
 .ncurses.unpack: $(ncurses.tgz)
 	tar xvf $^ && touch $(CWD)/$@
 
-.ncurses.config: .ncurses.unpack .ssl.install
+.ncurses.config: .ncurses.unpack
 	cd $(ncurses.dir) && \
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.ncurses.args)  && \
 	touch $(CWD)/$@

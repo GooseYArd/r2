@@ -31,5 +31,5 @@ db.test: install/data/postgresql.conf install/data/pg_hba.conf
 .db.clean: 
 	rm -rf install/data
 
-clean: .pg.clean .ruby.clean .yaml.clean .gems.clean .passenger.clean .repmgr.clean .nginx.clean .curl.clean .openssl.clean .ncurses.clean .readline.clean .zlib.clean
+clean: .pg.clean .ruby.clean .yaml.clean .gems.clean .passenger.clean .repmgr.clean .nginx.clean .curl.clean .openssl.clean .ncurses.clean .readline.clean .zlib.clean .pcre.clean
 	rm -rf install pgstart.sh pgstop.sh pginit.sh

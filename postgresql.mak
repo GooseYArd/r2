@@ -8,7 +8,7 @@ pg.tgz := $(pg.dir).tar.bz2
 .pg.unpack: $(pg.tgz)
 	tar xvf $^ && touch $(CWD)/$@
 
-.pg.config: .pg.unpack .ssl.install .readline.install .zlib.install
+.pg.config: .pg.unpack .openssl.install .readline.install .zlib.install
 	cd $(pg.dir) && \
 	LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS) $(LDFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.pg.args)  && \
 	touch $(CWD)/$@

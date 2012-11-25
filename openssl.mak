@@ -15,6 +15,7 @@ openssl.tgz := $(openssl.dir).tar.gz
 
 .openssl.make: .openssl.config
 	cd $(openssl.dir) && \
+	sed -i 's# libcrypto.a##;s# libssl.a##' Makefile && \
 	$(MAKE) && \
 	touch $(CWD)/$@
 
