@@ -13,3 +13,8 @@ CONTEXT:  line 6 of configuration file "/home/bailey/r2/install/data/pg_hba.conf
 LOG:  specifying both host name and CIDR mask is invalid: "PARTNER/32"
 CONTEXT:  line 7 of configuration file "/home/bailey/r2/install/data/pg_hba.conf"
 WARNING:  pg_hba.conf not reloaded
+FATAL:  no pg_hba.conf entry for host "172.31.5.34", user "repmgr", database "pgbench"
+LOG:  received SIGHUP, reloading configuration files
+FATAL:  no pg_hba.conf entry for host "172.31.5.108", user "repmgr", database "pgbench"
+FATAL:  no pg_hba.conf entry for host "172.31.5.108", user "repmgr", database "pgbench"
+LOG:  received SIGHUP, reloading configuration files

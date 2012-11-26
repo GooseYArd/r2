@@ -32,6 +32,10 @@ install/data/postgresql.conf: postgresql.conf.master.in .pgbench.install
 install/data/pg_hba.conf: pg_hba.conf.master.in
 	m4 $< > $@
 
+install/etc/repmgr.conf: repmgr.conf.in
+	mkdir -p $(@D)
+	m4 $< > $@
+
 db.init: install/data/postgresql.conf pgstart.sh pginit.sh pgstop.sh
 	touch db.test
 

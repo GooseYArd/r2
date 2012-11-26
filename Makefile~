@@ -29,7 +29,10 @@ install/data/postgresql.conf: postgresql.conf.master.in .pgbench.install
 	$(pfx)/bin/createdb pgbench
 	$(pfx)/bin/pgbench -i -s 10 pgbench
 
-%/pg_hba.conf: pg_hba.conf.%.in
+install/data/pg_hba.conf: pg_hba.conf.master.in
+	m4 $< > $@
+
+install/etc/repmgr.conf: repmgr.conf.in
 	m4 $< > $@
 
 db.init: install/data/postgresql.conf pgstart.sh pginit.sh pgstop.sh
