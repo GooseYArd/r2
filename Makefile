@@ -28,6 +28,9 @@ install/data/postgresql.conf: postgresql.conf.master.in .pgbench.install
 	$(pfx)/bin/createuser --login --superuser --replication repmgr
 	$(pfx)/bin/createdb pgbench
 	$(pfx)/bin/pgbench -i -s 10 pgbench
+	rm install/data/pg_hba.conf
+	$(MAKE) install/data/pg_hba.conf
+	install/bin/pg_ctl -D install/data reload
 
 install/data/pg_hba.conf: pg_hba.conf.master.in
 	m4 $< > $@
@@ -36,7 +39,7 @@ install/etc/repmgr.conf: repmgr.conf.in
 	mkdir -p $(@D)
 	m4 $< > $@
 
-db.init: install/data/postgresql.conf pgstart.sh pginit.sh pgstop.sh
+db.init: install/data/postgresql.conf pgstart.sh pginit.sh pgstop.sh install/data/pg_hba.conf
 	touch db.test
 
 db.clean: 

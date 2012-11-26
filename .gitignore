@@ -1,7 +1,8 @@
-*.config
-*.install
-*.make
-*.unpack
+.*.config
+.*.install
+.*.make
+.*.unpack
+.*.patch
 *.sh
 *~
 install
