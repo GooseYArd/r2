@@ -185,13 +185,16 @@ elsif myname == master
   f.close()
   
   pg_start()
+
   sleep(10)
   pgenv_call("createuser --login --superuser --replication repmgr")
   pgenv_call("createdb pgbench")
   pgenv_call("pgbench -i -s 10 pgbench")
+
   write_repmgr_conf(rmf, cluster, db, 1, myname)
   rmf.close()
   role = 'master'
+
 else
   abort("I don't know what I am")
 end
