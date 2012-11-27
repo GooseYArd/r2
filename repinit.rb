@@ -8,7 +8,7 @@ require 'net/ssh'
 require 'ipaddr'
 require 'fileutils'
 
-defcfg = "defaults.cfg"
+$defcfg = "defaults.cfg"
 
 def pgenv_call(cmd)
   system("PATH=install/bin:$PATH #{cmd}")
@@ -18,17 +18,19 @@ def pgenv_call(cmd)
   return true
 end  
 
-def install_cert(hostname)
-
-  fns = Hash.new( 'install/data/server.crt' => "ca/%s.cert" % host,
-                  'install/data/server.key' => "certs/%s.key" % host,
-                  'install/data/root.crt' => "ca/ca-cert.pem", )
+def install_cert(host)
+  
+  fns = { 'install/data/server.crt' => "ca/%s.cert" % host,
+    'install/data/server.key' => "certs/%s.key" % host,
+    'install/data/root.crt' => "ca/ca-cert.pem", }
   
   fns.each { |dst, src| 
-    if not File.exists?(fn)
+    if not File.exists?(src)
       raise 'missing certificate for this host'
     end 
+    puts "Copying %s to %s" % [src, dst]
     FileUtils.cp(src, dst)
+    FileUtils.chmod(0400, dst)
   }
 
 end
@@ -65,14 +67,14 @@ def write_pg_hba(f, dbuser, master, slaves)
             ['host', 'all', 'all', '::1/128', 'trust'],    
             ['local','all', 'all', 'trust'] ]
 
-  rules << [ 'host', 'pgbench', 'repmgr', "%s/32" % ipfor(master), 'trust' ]
-  rules << [ 'host', 'replication', 'repmgr', "%s/32" % ipfor(master), 'trust' ]
+  rules << [ 'hostssl', 'pgbench', 'repmgr', "%s/32" % ipfor(master), 'trust' ]
+  rules << [ 'hostssl', 'replication', 'repmgr', "%s/32" % ipfor(master), 'trust' ]
  
   dbs = ['pgbench', 'repmgr']
   dbs.each { |db| 
     slaves.each { |slave| 
-      rules << [ 'host', db, dbuser, "%s/32" % ipfor(slave), 'trust' ] 
-      rules << [ 'host', 'replication', 'repmgr', "%s/32" % ipfor(slave), 'trust' ]
+      rules << [ 'hostssl', db, dbuser, "%s/32" % ipfor(slave), 'trust' ] 
+      rules << [ 'hostssl', 'replication', 'repmgr', "%s/32" % ipfor(slave), 'trust' ]
     }
   }
 
@@ -138,103 +140,114 @@ def pg_running()
   return true
 end    
 
+def get_fqdn()
+  addrinfo = Socket.getaddrinfo(Socket.gethostname, nil, nil, Socket::SOCK_DGRAM, nil, Socket::AI_CANONNAME)
+  af, port, myname, addr = addrinfo.first
+  return myname
+end
 
-options = {}
+def main(args)
 
-opt_parser = OptionParser.new do |opt|
-  opt.banner = "Usage: repinit.rb [OPTIONS]"
-  opt.separator  ""
-  opt.separator  "Options"
+  options = {}
+
+  opt_parser = OptionParser.new do |opt|
+    opt.banner = "Usage: repinit.rb [OPTIONS]"
+    opt.separator  ""
+    opt.separator  "Options"
+    
+    opt.on("-n", "--noop", "say what youd do but dont") do
+      options[:noop] = true
+    end
+
+    opt.on("-h","--help","help") do
+      puts opt_parser
+    end
+  end
+
+  opt_parser.parse!
+  myname = get_fqdn()
   
-  opt.on("-n", "--noop", "say what youd do but dont") do
-    options[:noop] = true
+  cfg = ParseConfig.new($defcfg)
+
+  slaves = cfg['replication']['slaves'].split(" ")
+  cluster = cfg['replication']['cluster']
+  master = cfg['replication']['master']
+  db = cfg['replication']['database']
+  dbuser = cfg['replication']['dbuser']
+  sshuser = cfg['replication']['sshuser']
+
+  if File.exist?('install/data')
+    if pg_running()
+      pg_ctl('stop')  
+    end
+    system('rm -rf install/data')
   end
 
-  opt.on("-h","--help","help") do
-    puts opt_parser
+  repmgrcfg = "install/etc/repmgr.conf"
+  rmf = File.new(repmgrcfg, 'w')
+  role = nil
+
+  if slaves.include? myname
+
+    if not verify_pg(master, db, dbuser)
+      abort("Couldn't connect to master, exiting")
+    end
+    
+    if not verify_ssh(master, sshuser)
+      abort("Couldn't make ssh connection to master")
+    end
+    
+    node = slaves.index(myname) + 2
+    puts "Starting slave configuration, writing repmgr.conf"
+    write_repmgr_conf(rmf, cluster, db, node, myname)
+    rmf.close()  
+    puts "Cloning standby"
+    clone_standby(db, master, dbuser, sshuser)
+    pg_start()
+    role = 'standby'
+    sleep(3)
+
+  elsif myname == master
+
+    initdb()
+    install_cert(myname)
+
+    f = File.open("install/data/pg_hba.conf", "w")
+    write_pg_hba(f, dbuser, master, slaves)
+    f.close()
+
+    f = File.open("install/data/postgresql.conf", "w")
+    write_postgresql_conf(f)
+    f.close()
+    
+    pg_start()
+
+    sleep(10)
+    pgenv_call("createuser --login --superuser --replication repmgr")
+    pgenv_call("createdb pgbench")
+    pgenv_call("pgbench -i -s 10 pgbench")
+
+    write_repmgr_conf(rmf, cluster, db, 1, myname)
+    rmf.close()
+    role = 'master'
+
+  else
+    abort("I don't know what I am")
   end
+
+  if not pg_running()
+    puts "Waiting for postgresql to come up"  
+    while not pg_running()
+      puts '.'
+      sleep(1)
+    end
+  end
+
+  if not register(role, repmgrcfg)
+    puts "NO"
+  end
+
 end
 
-opt_parser.parse!
-
-myname = Socket.gethostname
-cfg = ParseConfig.new(defcfg)
-
-slaves = cfg['replication']['slaves'].split(" ")
-cluster = cfg['replication']['cluster']
-master = cfg['replication']['master']
-db = cfg['replication']['database']
-dbuser = cfg['replication']['dbuser']
-sshuser = cfg['replication']['sshuser']
-
-if File.exist?('install/data')
-  if pg_running()
-    pg_ctl('stop')  
-  end
-  system('rm -rf install/data')
-end
-
-repmgrcfg = "install/etc/repmgr.conf"
-rmf = File.new(repmgrcfg, 'w')
-role = nil
-
-if slaves.include? myname
-
-  if not verify_pg(master, db, dbuser)
-    abort("Couldn't connect to master, exiting")
-  end
-  
-  if not verify_ssh(master, sshuser)
-    abort("Couldn't make ssh connection to master")
-  end
-  
-  node = slaves.index(myname) + 2
-  puts "Starting slave configuration, writing repmgr.conf"
-  write_repmgr_conf(rmf, cluster, db, node, myname)
-  rmf.close()  
-  puts "Cloning standby"
-  clone_standby(db, master, dbuser, sshuser)
-  pg_start()
-  role = 'standby'
-  sleep(3)
-
-elsif myname == master
-
-  initdb()
-
-  install_cert()
-
-  f = File.open("install/data/pg_hba.conf", "w")
-  write_pg_hba(f, dbuser, master, slaves)
-  f.close()
-
-  f = File.open("install/data/postgresql.conf", "w")
-  write_postgresql_conf(f)
-  f.close()
-  
-  pg_start()
-
-  sleep(10)
-  pgenv_call("createuser --login --superuser --replication repmgr")
-  pgenv_call("createdb pgbench")
-  pgenv_call("pgbench -i -s 10 pgbench")
-
-  write_repmgr_conf(rmf, cluster, db, 1, myname)
-  rmf.close()
-  role = 'master'
-
-else
-  abort("I don't know what I am")
-end
-
-if not pg_running()
-  puts "Waiting for postgresql to come up"  
-  while not pg_running()
-    puts '.'
-    sleep(1)
-  end
-end
-
-if not register(role, repmgrcfg)
-  puts "NO"
-end
+main(ARGV) if $0 == __FILE__
+#test() if $0 == __FILE__

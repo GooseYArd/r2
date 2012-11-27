@@ -3,7 +3,8 @@ pg.dir := postgresql-$(pg.version)
 pg.tgz := $(pg.dir).tar.bz2
 
 .pg.args := \
-	--prefix=$(pfx)
+	--prefix=$(pfx) \
+	--with-openssl
 
 .pg.unpack: $(pg.tgz)
 	tar xvf $^ && touch $(CWD)/$@
