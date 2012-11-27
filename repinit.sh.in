@@ -1,2 +1,0 @@
-#!/bin/sh
-install/bin/repmgr -f install/etc/repmgr.conf --verbose master register
