@@ -33,7 +33,7 @@ def pg_ctl(command)
   cmd = "install/bin/pg_ctl -D install/data %s" % command
   return pgenv_call(cmd)
 end  
-
+  
 def initdb()
   cmd = "initdb -D install/data --locale=en_US.UTF-8 --lc-messages=sv_SE.UTF-8"
   return pgenv_call(cmd)
@@ -50,11 +50,13 @@ def write_pg_hba(f, dbuser, master, slaves)
             ['local','all', 'all', 'trust'] ]
 
   rules << [ 'host', 'pgbench', 'repmgr', "%s/32" % ipfor(master), 'trust' ]
+  rules << [ 'host', 'replication', 'repmgr', "%s/32" % ipfor(master), 'trust' ]
  
   dbs = ['pgbench', 'repmgr']
   dbs.each { |db| 
     slaves.each { |slave| 
       rules << [ 'host', db, dbuser, "%s/32" % ipfor(slave), 'trust' ] 
+      rules << [ 'host', 'replication', 'repmgr', "%s/32" % ipfor(slave), 'trust' ]
     }
   }
 
@@ -192,6 +194,14 @@ elsif myname == master
   role = 'master'
 else
   abort("I don't know what I am")
+end
+
+if not pg_running()
+  puts "Waiting for postgresql to come up"  
+  while not pg_running()
+    puts '.'
+    sleep(1)
+  end
 end
 
 if not register(role, repmgrcfg)
