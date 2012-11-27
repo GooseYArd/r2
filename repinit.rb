@@ -6,6 +6,7 @@ require "pg"
 require 'optparse'
 require 'net/ssh'
 require 'ipaddr'
+require 'fileutils'
 
 defcfg = "defaults.cfg"
 
@@ -16,6 +17,21 @@ def pgenv_call(cmd)
   end
   return true
 end  
+
+def install_cert(hostname)
+
+  fns = Hash.new( 'install/data/server.crt' => "ca/%s.cert" % host,
+                  'install/data/server.key' => "certs/%s.key" % host,
+                  'install/data/root.crt' => "ca/ca-cert.pem", )
+  
+  fns.each { |dst, src| 
+    if not File.exists?(fn)
+      raise 'missing certificate for this host'
+    end 
+    FileUtils.cp(src, dst)
+  }
+
+end
 
 def register(role, cf)
   cmd = "install/bin/repmgr -f %s --verbose %s register" % [cf, role]
@@ -66,13 +82,22 @@ def write_pg_hba(f, dbuser, master, slaves)
 end
 
 def write_postgresql_conf(f)
-  f.write("listen_addresses = '*'\n")
-  f.write("wal_level = 'hot_standby'\n")
-  f.write("archive_mode = on\n")
-  f.write("archive_command = '/bin/true'\n")
-  f.write("max_wal_senders = 10\n")
-  f.write("wal_keep_segments = 5000\n")
-  f.write("hot_standby = on\n")
+
+  items = [ ['listen_addresses', "'*'"],
+            ["wal_level", "'hot_standby'"],
+            ["archive_mode", 'on'],
+            ["archive_command", "'/bin/true'"],
+            ["max_wal_senders", '10'],
+            ["wal_keep_segments", '5000'],
+            ["hot_standby", 'on'],
+            ["ssl", 'on'],
+            ['ssl_ciphers', "'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'"],
+            ['ssl_renegotiation_limit', '512MB'],
+            ['ssl_cert_file', "'server.crt'"],
+            ['ssl_key_file', "'server.key'"], ]
+
+  items.each{ |e| f.write("#{e[0]} = #{e[1]}\n") }
+            
 end
  
 def clone_standby(db, master, dbuser, sshuser)
@@ -176,6 +201,9 @@ if slaves.include? myname
 elsif myname == master
 
   initdb()
+
+  install_cert()
+
   f = File.open("install/data/pg_hba.conf", "w")
   write_pg_hba(f, dbuser, master, slaves)
   f.close()
