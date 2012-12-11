@@ -34,7 +34,7 @@ net-sftp
 net-ssh
 net-ssh-gateway
 passenger
-pg
+mysql
 polyglot
 rack
 rack-cache

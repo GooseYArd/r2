@@ -12,12 +12,12 @@ cmake.tgz := $(cmake.dir).tar.gz
 	
 .cmake.config: .cmake.unpack
 	cd $(cmake.dir) && \
-	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.cmake.args)  && \
+	sh configure $(.cmake.args)  && \
 	touch $(CWD)/$@
 
 .cmake.make: .cmake.config
 	cd $(cmake.dir) && \
-	$(MAKE) -j4 && \
+	$(MAKE) && \
 	touch $(CWD)/$@
 
 .cmake.install: .cmake.make

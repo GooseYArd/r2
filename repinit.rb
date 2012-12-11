@@ -67,14 +67,14 @@ def write_pg_hba(f, dbuser, master, slaves)
             ['host', 'all', 'all', '::1/128', 'trust'],    
             ['local','all', 'all', 'trust'] ]
 
-  rules << [ 'hostssl', 'pgbench', 'repmgr', "%s/32" % ipfor(master), 'trust' ]
-  rules << [ 'hostssl', 'replication', 'repmgr', "%s/32" % ipfor(master), 'trust' ]
+  rules << [ 'hostssl', 'pgbench', 'repmgr', "%s/32" % ipfor(master), 'trust clientcert=1' ]
+  rules << [ 'hostssl', 'replication', 'repmgr', "%s/32" % ipfor(master), 'trust clientcert=1' ]
  
   dbs = ['pgbench', 'repmgr']
   dbs.each { |db| 
     slaves.each { |slave| 
-      rules << [ 'hostssl', db, dbuser, "%s/32" % ipfor(slave), 'trust' ] 
-      rules << [ 'hostssl', 'replication', 'repmgr', "%s/32" % ipfor(slave), 'trust' ]
+      rules << [ 'hostssl', db, dbuser, "%s/32" % ipfor(slave), 'trust clientcert=1' ] 
+      rules << [ 'hostssl', 'replication', 'repmgr', "%s/32" % ipfor(slave), 'trust clientcert=1' ]
     }
   }
 

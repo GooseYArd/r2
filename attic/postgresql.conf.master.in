@@ -1,0 +1,30 @@
+#unix_socket_directory = ''		# (change requires restart)
+#unix_socket_group = ''			# (change requires restart)
+#unix_socket_permissions = 0777		# begin with 0 to use octal notation
+
+# - Security and Authentication -
+#authentication_timeout = 1min		# 1s-600s
+#ssl = off				# (change requires restart)
+#ssl_ciphers = 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'	# allowed SSL ciphers
+					# (change requires restart)
+#ssl_renegotiation_limit = 512MB	# amount of data between renegotiations
+#ssl_cert_file = 'server.crt'		# (change requires restart)
+#ssl_key_file = 'server.key'		# (change requires restart)
+#ssl_ca_file = ''			# (change requires restart)
+#ssl_crl_file = ''			# (change requires restart)
+#password_encryption = on
+#db_user_namespace = off
+
+listen_addresses = '*'
+
+#wal_level = 'hot_standby'
+#max_wal_senders = 3
+#archive_mode = on
+#archive_command = 'cp -f %p /home/bailey/rails/secondary/data/archive/%f</dev/null'
+
+wal_level = 'hot_standby'
+archive_mode = on
+archive_command = '/bin/true'       
+max_wal_senders = 10
+wal_keep_segments = 5000
+hot_standby = on
