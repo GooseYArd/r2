@@ -57,34 +57,16 @@ def do_query(conn, statement)
   rescue Mysql::Error => e
     puts "Error #{e.errno}: #{e.error}"
   ensure
-    conn.close unless conn.nil?
+
   end
 end
 
-def remove_anonymous_users(conn)
-  do_query(conn, "DELETE FROM mysql.user WHERE User='';")
-end  
-
-def remove_remote_root(conn)
-  do_query(conn, "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
-end
-
-def remove_test_database(conn)
-  do_query(conn, "DROP DATABASE test;")
-end
-
 def create_repl_user(conn, slaves, user)
-  slaves.each { |slave|
-    puts 'Adding slave %s' % slave
-    ip = ipfor(slave)
-    do_query(conn, "CREATE USER 'repl'@'%s' IDENTIFIED BY 'slavepass';" % [user, ip])
-    do_query(conn, "GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%s';" % [user, ip])
-    do_query(conn, "GRANT SELECT ON mysql.help_topic TO 'repl'@'%s';" % ip)
-  }
+
 end
 
 def flush_privs(conn)
-  do_query(conn, "FLUSH PRIVILEGES;")
+
 end
 
 def write_mysql_conf(f, role, server_id)
@@ -249,9 +231,7 @@ def main(args)
 
     conn = Mysql::new(host='localhost', user='root')       
     do_query(conn, "CHANGE MASTER TO MASTER_HOST='%s' MASTER_USER='repl' MASTER_PASSWORD='slavepass'  MASTER_LOG_FILE='' MASTER_LOG_POS=4;" % master)
-    
-    role = 'standby'
-    sleep(3)
+    conn.close()
 
   elsif myname == master
 
@@ -264,23 +244,32 @@ def main(args)
     puts "done. starting mysql..."
     mysql_start()
 
-    conn = Mysql::new(host='localhost', user='root')   
-    
     puts "sleeping for 5 seconds"
     sleep(5)
-    puts "started. setting up security..."
-    remove_anonymous_users(conn)
-    remove_remote_root(conn)
-    remove_test_database(conn)
-    puts "done."
 
-    create_repl_user(conn, slaves, dbuser)
-    flush_privs(conn)
+    puts "started. setting up security..."
+    conn = Mysql::new(host='localhost', user='root')   
+    conn.query("DELETE FROM mysql.user WHERE User='';")
+    conn.query("DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
+    conn.query("DROP DATABASE test;")
+ 
+    puts "About to add slaves"
+
+    slaves.each { |slave|
+      puts 'Adding slave %s' % slave
+      ip = ipfor(slave)
+      conn.query("CREATE USER '%s'@'%s' IDENTIFIED BY '%s';" % ['repl', ip, 'slavepass'])
+      conn.query("GRANT REPLICATION SLAVE ON *.* TO '%s'@'%s';" % ['repl', ip])
+      conn.query("GRANT SELECT ON mysql.help_topic TO '%s'@'%s';" % ['repl', ip])
+    }
     
+    conn.query("FLUSH PRIVILEGES;")
+    conn.commit()
+
     install_cert(myname)
 
     role = 'master'
-    do_query(conn, "UNLOCK TABLES;")
+    conn.query("UNLOCK TABLES;")
 
     slaves.each { |slave|
       ip = ipfor(slave)
@@ -288,6 +277,8 @@ def main(args)
         ssh.exec('cd r2; ./repinit.sh')
       end
     }
+
+    conn.close()
 
   else
     abort("I don't know what I am")
