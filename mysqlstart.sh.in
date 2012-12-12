@@ -4,4 +4,4 @@ MYSQL_HOME=ROOT/install/data
 MYSQL_UNIX_PORT=ROOT/install/mysql.sock,
 PATH=ROOT/install/bin:ROOT/install/scripts:$PATH
 
-ROOT/install/bin/mysqld_safe --defaults-file=ROOT/install/my.cnd
+ROOT/install/bin/mysqld_safe --defaults-file=ROOT/install/my.cnf
