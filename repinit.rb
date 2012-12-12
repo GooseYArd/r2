@@ -243,10 +243,13 @@ def main(args)
     if not verify_mysql_tcp(master, db, dbuser)
       abort("Couldn't connect to master, exiting")
     end
-    
-    do_query("CHANGE MASTER TO MASTER_HOST='%s' MASTER_USER='repl' MASTER_PASSWORD='slavepass'  MASTER_LOG_FILE='' MASTER_LOG_POS=4;" % master)
-    
+
+    initdb()
     mysql_start()
+
+    conn = Mysql::new(host='localhost', user='root')       
+    do_query(conn, "CHANGE MASTER TO MASTER_HOST='%s' MASTER_USER='repl' MASTER_PASSWORD='slavepass'  MASTER_LOG_FILE='' MASTER_LOG_POS=4;" % master)
+    
     role = 'standby'
     sleep(3)
 
