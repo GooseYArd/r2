@@ -229,6 +229,9 @@ def main(args)
     initdb()
     mysql_start()
 
+    puts "sleeping for 5 seconds"
+    sleep(5)
+    
     conn = Mysql::new(host='localhost', user='root')       
     do_query(conn, "CHANGE MASTER TO MASTER_HOST='%s' MASTER_USER='repl' MASTER_PASSWORD='slavepass'  MASTER_LOG_FILE='' MASTER_LOG_POS=4;" % master)
     conn.close()
