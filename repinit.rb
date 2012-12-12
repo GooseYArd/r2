@@ -2,24 +2,24 @@
 # -*- coding: utf-8 -*-
 require 'parseconfig'
 require 'socket'
-require "pg"
+require "mysql"
 require 'optparse'
 require 'net/ssh'
 require 'ipaddr'
 require 'fileutils'
 
 $defcfg = "defaults.cfg"
+$mysql_home = "/home/bailey/r2/install"
 
-def pgenv_call(cmd)
-  system("PATH=install/bin:$PATH #{cmd}")
+def dbenv_call(cmd)
+  system("MYSQL_HOME=#{$mysql_home} PATH=install/bin:install/scripts:$PATH #{cmd}")
   if $?.exitstatus != 0
     raise 'non-zero exit status'
   end
   return true
 end  
 
-def install_cert(host)
-  
+def install_cert(host)  
   fns = { 'install/data/server.crt' => "ca/%s.cert" % host,
     'install/data/server.key' => "certs/%s.key" % host,
     'install/data/root.crt' => "ca/ca-cert.pem", }
@@ -37,7 +37,7 @@ end
 
 def register(role, cf)
   cmd = "install/bin/repmgr -f %s --verbose %s register" % [cf, role]
-  return pgenv_call(cmd)
+  return dbenv_call(cmd)
 end
 
 def write_repmgr_conf(f, cluster, db, node, name)
@@ -47,64 +47,79 @@ def write_repmgr_conf(f, cluster, db, node, name)
   f.write("conninfo='host=%s user=repmgr dbname=%s'\n" % [name, db])
 end
 
-def pg_ctl(command)
-  cmd = "install/bin/pg_ctl -D install/data %s" % command
-  return pgenv_call(cmd)
+def mysql_stop()
+  cmd = "mysqladmin --defaults-file=/home/bailey/r2/install/my.cnf shutdown"
+  print cmd
+  return dbenv_call(cmd)
 end  
   
 def initdb()
-  cmd = "initdb -D install/data --locale=en_US.UTF-8 --lc-messages=sv_SE.UTF-8"
-  return pgenv_call(cmd)
+  cmd = "cd install && ./scripts/mysql_install_db"
+  return dbenv_call(cmd)
 end
 
 def ipfor(host)
   return Socket.getaddrinfo(host, "http", nil, :STREAM)[0][2]
 end
 
-def write_pg_hba(f, dbuser, master, slaves)
-  rules = [ ['local', 'all', 'all', 'trust', nil],
-            ['host', 'all', 'all', '127.0.0.1/32', 'trust'],
-            ['host', 'all', 'all', '::1/128', 'trust'],    
-            ['local','all', 'all', 'trust'] ]
-
-  rules << [ 'hostssl', 'pgbench', 'repmgr', "%s/32" % ipfor(master), 'trust clientcert=1' ]
-  rules << [ 'hostssl', 'replication', 'repmgr', "%s/32" % ipfor(master), 'trust clientcert=1' ]
- 
-  dbs = ['pgbench', 'repmgr']
-  dbs.each { |db| 
-    slaves.each { |slave| 
-      rules << [ 'hostssl', db, dbuser, "%s/32" % ipfor(slave), 'trust clientcert=1' ] 
-      rules << [ 'hostssl', 'replication', 'repmgr', "%s/32" % ipfor(slave), 'trust clientcert=1' ]
-    }
-  }
-
-  rules.each { |r|
-    f.write("#{r[0]}\t#{r[1]}\t#{r[2]}\t#{r[3]}\t#{r[4]}\n")
-  }
+def do_query(statement)
+  begin
+    conn = Mysql::new(host='localhost', user='root')   
+    conn.query(statement)
+  rescue Mysql::Error => e
+    puts "Error #{e.errno}: #{e.error}"
+  ensure
+    conn.close unless conn.nil?
+  end
 end
 
-def write_postgresql_conf(f)
+def remove_anonymous_users()
+  do_query("DELETE FROM mysql.user WHERE User='';")
+end  
 
-  items = [ ['listen_addresses', "'*'"],
-            ["wal_level", "'hot_standby'"],
-            ["archive_mode", 'on'],
-            ["archive_command", "'/bin/true'"],
-            ["max_wal_senders", '10'],
-            ["wal_keep_segments", '5000'],
-            ["hot_standby", 'on'],
-            ["ssl", 'on'],
-            ['ssl_ciphers', "'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'"],
-            ['ssl_renegotiation_limit', '512MB'],
-            ['ssl_cert_file', "'server.crt'"],
-            ['ssl_key_file', "'server.key'"], ]
-
-  items.each{ |e| f.write("#{e[0]} = #{e[1]}\n") }
-            
+def remove_remote_root()
+  do_query("DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
 end
- 
-def clone_standby(db, master, dbuser, sshuser)
-  cmd = "repmgr -D install/data -d %s -p 5432 -U %s -R %s --verbose standby clone %s" % [db, dbuser, sshuser, master]
-  return pgenv_call(cmd)
+
+def remove_test_database()
+  do_query("DROP DATABASE test;")
+end
+
+def create_repl_user()
+  do_query("CREATE USER 'repl'@'%.mydomain.com' IDENTIFIED BY 'slavepass';")
+  do_query("GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%.mydomain.com';")
+end
+
+def write_mysql_conf(f, role, server_id)
+  
+  items = { 
+    'mysqld' => [["log-error", "error.log"],
+                 ["pid-file", "/home/bailey/r2/install/mysql.pid"],
+                 ["user", "bailey"],
+                 ["innodb_buffer_pool_size", "128M"],
+                 ["basedir ", " /home/bailey/r2/install"],
+                 ["datadir ", " /home/bailey/r2/install/data"],
+                 ["sql_mode", "NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES"],
+                 ["socket", "/home/bailey/r2/install/mysql.sock"],
+                 ["log-bin", "mysql-bin"],
+                 ["server-id", server_id ],
+                 ["innodb_flush_log_at_trx_commit","1"],
+                 ["sync_binlog", "1"],
+                 ["ssl-ca", "root.crt"], 
+                 ["ssl-cert", "server.crt"], 
+                 ["ssl-key", "server.key"],
+                ],
+    'client' => [
+                 ["socket", "/home/bailey/r2/install/mysql.sock"],
+                 ["user", "root"]
+                ],    
+  }
+    
+  items.each_pair{ |section, data| 
+    f.write("[#{section}]\n")  
+    data.each{ |e| f.write("#{e[0]} = #{e[1]}\n") }
+  }
+
 end
 
 def verify_ssh(host, user)
@@ -120,21 +135,52 @@ def verify_ssh(host, user)
   return true
 end  
 
-def verify_pg(master, db, user, port=5432)
-  conn = PGconn.connect(:host => master, 
-                        :port => port,
-                        :dbname => db,
-                        :user => user)
-end
-
-def pg_start()
-  pgenv_call("postgres -D install/data > install/data/logfile 2>&1 &")
-end
-
-def pg_running()
+def verify_mysql_tcp(master, db, user, port=3306)
   begin
-    pg_ctl('status')
+    conn = Mysql.connect(:host => master, 
+                         :port => port,
+                         :dbname => db,
+                         :user => user)
   rescue
+    return false
+  ensure
+    conn.close unless conn.nil?
+  end
+end
+
+def mysql_start()
+  env = { 
+    "MYSQL_HOME" => $mysql_home,  
+    "MYSQL_UNIX_PORT" => $mysql_sock,
+    "PATH" => "/home/bailey/install/bin:/home/bailey/install/scripts:%s" % ENV['PATH']
+  }
+  cmd = ["/home/bailey/r2/install/bin/mysqld_safe", "--defaults-file=/home/bailey/r2/install/my.cnf"]
+  pid = Process.spawn(env, 
+                      cmd,
+                      :out => 'flarf', 
+                      :err => 'flarf.err')
+  Process.detach pid
+end
+
+def readpid(pidfile)
+  pidf = File.open(pidfile, 'r')
+  pid = pidf.readline()
+  pidf.close()
+  return pid.chomp()   
+end
+
+def mysql_running()
+  begin
+    pidfile = "install/mysql.pid"
+    if not File.exist?(pidfile)
+      puts "pidfile doesn't exist"
+      return false
+    end
+    pid = readpid(pidfile)
+    Process.kill(0, Integer(pid))
+  rescue Errno::ESRCH
+    return false
+  rescue Exception => ex
     return false
   end
   return true
@@ -148,7 +194,12 @@ end
 
 def main(args)
 
-  options = {}
+#  /home/bailey/r2/install/bin/mysqladmin -u root password 'new-password'
+#  /home/bailey/r2/install/bin/mysqladmin -u root -h mahnmut password 'new-password'
+  
+  if not ENV.has_key?('MYSQL_UNIX_PORT')
+    abort("MYSQL_UNIX_PORT isn't set")
+  end
 
   opt_parser = OptionParser.new do |opt|
     opt.banner = "Usage: repinit.rb [OPTIONS]"
@@ -177,75 +228,80 @@ def main(args)
   sshuser = cfg['replication']['sshuser']
 
   if File.exist?('install/data')
-    if pg_running()
-      pg_ctl('stop')  
+    if mysql_running()
+      print("stopping mysql")
+      mysql_stop()  
     end
     system('rm -rf install/data')
+    Dir.mkdir("install/data")
   end
 
-  repmgrcfg = "install/etc/repmgr.conf"
-  rmf = File.new(repmgrcfg, 'w')
   role = nil
 
   if slaves.include? myname
 
-    if not verify_pg(master, db, dbuser)
+    f = File.open("install/my.cnf", "w")
+    write_mysql_conf(f, 'slave', '2')
+    f.close()
+
+    if not verify_mysql_tcp(master, db, dbuser)
       abort("Couldn't connect to master, exiting")
     end
     
-    if not verify_ssh(master, sshuser)
-      abort("Couldn't make ssh connection to master")
-    end
+    do_query("CHANGE MASTER TO MASTER_HOST='master_host_name' MASTER_USER='replication_user_name' MASTER_PASSWORD='replication_password'  MASTER_LOG_FILE='' MASTER_LOG_POS=4;")
+
+    #if not verify_ssh(master, sshuser)
+    #  abort("Couldn't make ssh connection to master")
+    #end
     
-    node = slaves.index(myname) + 2
-    puts "Starting slave configuration, writing repmgr.conf"
-    write_repmgr_conf(rmf, cluster, db, node, myname)
-    rmf.close()  
-    puts "Cloning standby"
-    clone_standby(db, master, dbuser, sshuser)
-    pg_start()
+    #node = slaves.index(myname) + 2
+    #puts "Starting slave configuration, writing repmgr.conf"
+    #write_repmgr_conf(rmf, cluster, db, node, myname)
+    #rmf.close()  
+    #puts "Cloning standby"
+    #clone_standby(db, master, dbuser, sshuser)
+    mysql_start()
     role = 'standby'
     sleep(3)
 
   elsif myname == master
 
+    f = File.open("install/my.cnf", "w")
+    write_mysql_conf(f, 'master', '1')
+    f.close()
+
+    puts "starting mysql_install_db..."
     initdb()
-    install_cert(myname)
+    puts "done. starting mysql..."
+    mysql_start()
 
-    f = File.open("install/data/pg_hba.conf", "w")
-    write_pg_hba(f, dbuser, master, slaves)
-    f.close()
-
-    f = File.open("install/data/postgresql.conf", "w")
-    write_postgresql_conf(f)
-    f.close()
+    puts "sleeping for 5 seconds"
+    sleep(5)
+    puts "started. setting up security..."
+    remove_anonymous_users()
+    remove_remote_root()
+    remove_test_database()
+    puts "done."
     
-    pg_start()
+    #install_cert(myname)
 
-    sleep(10)
-    pgenv_call("createuser --login --superuser --replication repmgr")
-    pgenv_call("createdb pgbench")
-    pgenv_call("pgbench -i -s 10 pgbench")
-
-    write_repmgr_conf(rmf, cluster, db, 1, myname)
-    rmf.close()
     role = 'master'
 
   else
     abort("I don't know what I am")
   end
 
-  if not pg_running()
-    puts "Waiting for postgresql to come up"  
-    while not pg_running()
+  if not mysql_running()
+    puts "Waiting for mysql to come up"  
+    while not mysql_running()
       puts '.'
       sleep(1)
     end
   end
 
-  if not register(role, repmgrcfg)
-    puts "NO"
-  end
+  #if not register(role, repmgrcfg)
+  #  puts "NO"
+  #end
 
 end
 

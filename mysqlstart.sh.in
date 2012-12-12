@@ -1,3 +1,7 @@
 include(`config.m4')dnl
 #!/bin/sh
-install/bin/postgres -D install/data > install/data/logfile 2>&1 &
+MYSQL_HOME=ROOT/install/data
+MYSQL_UNIX_PORT=ROOT/install/mysql.sock,
+PATH=ROOT/install/bin:ROOT/install/scripts:$PATH
+
+ROOT/install/bin/mysqld_safe --defaults-file=ROOT/install/my.cnd

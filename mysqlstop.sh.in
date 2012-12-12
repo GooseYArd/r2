@@ -1,5 +1,10 @@
 include(`config.m4')dnl
 #!/bin/sh
+MYSQL_HOME=ROOT/install/data
+MYSQL_UNIX_PORT=ROOT/install/mysql.sock,
+PATH=ROOT/install/bin:ROOT/install/scripts:$PATH
 
-pg_ctl -D PGDATA stop
+ROOT/install/bin/mysqladmin --defaults-file=ROOT/install/my.cnf shutdown
+
+
 
