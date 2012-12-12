@@ -87,7 +87,7 @@ end
 
 def create_repl_user(slaves)
   slaves.each { |slave|
-    ip = ip_for(slave)
+    ip = ipfor(slave)
     do_query("CREATE USER 'repl'@'%s' IDENTIFIED BY 'slavepass';" % ip)
     do_query("GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%s';" % ip)
   }
