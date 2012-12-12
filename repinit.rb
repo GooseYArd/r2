@@ -85,9 +85,16 @@ def remove_test_database()
   do_query("DROP DATABASE test;")
 end
 
-def create_repl_user()
-  do_query("CREATE USER 'repl'@'%.mydomain.com' IDENTIFIED BY 'slavepass';")
-  do_query("GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%.mydomain.com';")
+def create_repl_user(slaves)
+  slaves.each { |slave|
+    ip = ip_for(slave)
+    do_query("CREATE USER 'repl'@'%s' IDENTIFIED BY 'slavepass';" % ip)
+    do_query("GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%s';" % ip)
+  }
+end
+
+def flush_privs()
+  do_query("FLUSH PRIVILEGES;")
 end
 
 def write_mysql_conf(f, role, server_id)
@@ -137,11 +144,8 @@ end
 
 def verify_mysql_tcp(master, db, user, port=3306)
   begin
-    conn = Mysql.connect(:host => master, 
-                         :port => port,
-                         :dbname => db,
-                         :user => user)
-  rescue
+    conn = Mysql.connect(master, user, "", db)
+  rescue Exception => ex
     return false
   ensure
     conn.close unless conn.nil?
@@ -282,6 +286,8 @@ def main(args)
     remove_remote_root()
     remove_test_database()
     puts "done."
+    create_repl_user(slaves)
+    flush_privs()
     
     #install_cert(myname)
 
