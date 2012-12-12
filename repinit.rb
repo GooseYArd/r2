@@ -270,14 +270,9 @@ def main(args)
     remove_remote_root(conn)
     remove_test_database(conn)
     puts "done."
-<<<<<<< HEAD
-    
-    create_repl_user(slaves)
-    flush_privs()
-=======
+
     create_repl_user(conn, slaves, dbuser)
     flush_privs(conn)
->>>>>>> 54449648ef3a7cf04aaf8de6eba93b1dbcfe7ca2
     
     install_cert(myname)
 
