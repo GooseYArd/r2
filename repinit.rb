@@ -87,6 +87,7 @@ def write_mysql_conf(f, role, server_id)
                  ["ssl-ca", "root.crt"], 
                  ["ssl-cert", "server.crt"], 
                  ["ssl-key", "server.key"],
+                 ["report-host", "host_name"],
                 ],
     'client' => [
                  ["socket", "/home/bailey/r2/install/mysql.sock"],
