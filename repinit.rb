@@ -5,6 +5,7 @@ require 'socket'
 require "mysql"
 require 'optparse'
 require 'net/ssh'
+require 'net/sftp'
 require 'ipaddr'
 require 'fileutils'
 
@@ -35,18 +36,6 @@ def install_cert(host)
 
 end
 
-def register(role, cf)
-  cmd = "install/bin/repmgr -f %s --verbose %s register" % [cf, role]
-  return dbenv_call(cmd)
-end
-
-def write_repmgr_conf(f, cluster, db, node, name)
-  f.write("cluster=%s\n" % cluster)
-  f.write("node=%d\n" % node)
-  f.write("node_name=%s\n" % name )
-  f.write("conninfo='host=%s user=repmgr dbname=%s'\n" % [name, db])
-end
-
 def mysql_stop()
   cmd = "mysqladmin --defaults-file=/home/bailey/r2/install/my.cnf shutdown"
   print cmd
@@ -62,9 +51,8 @@ def ipfor(host)
   return Socket.getaddrinfo(host, "http", nil, :STREAM)[0][2]
 end
 
-def do_query(statement)
+def do_query(conn, statement)
   begin
-    conn = Mysql::new(host='localhost', user='root')   
     conn.query(statement)
   rescue Mysql::Error => e
     puts "Error #{e.errno}: #{e.error}"
@@ -73,28 +61,28 @@ def do_query(statement)
   end
 end
 
-def remove_anonymous_users()
-  do_query("DELETE FROM mysql.user WHERE User='';")
+def remove_anonymous_users(conn)
+  do_query(conn, "DELETE FROM mysql.user WHERE User='';")
 end  
 
-def remove_remote_root()
-  do_query("DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
+def remove_remote_root(conn)
+  do_query(conn, "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
 end
 
-def remove_test_database()
-  do_query("DROP DATABASE test;")
+def remove_test_database(conn)
+  do_query(conn, "DROP DATABASE test;")
 end
 
-def create_repl_user(slaves)
+def create_repl_user(conn, slaves, user)
   slaves.each { |slave|
     ip = ipfor(slave)
-    do_query("CREATE USER 'repl'@'%s' IDENTIFIED BY 'slavepass';" % ip)
-    do_query("GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%s';" % ip)
+    do_query(conn, "CREATE USER 'repl'@'%s' IDENTIFIED BY 'slavepass';" % [user, ip])
+    do_query(conn, "GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%s';" % [user, ip])
   }
 end
 
-def flush_privs()
-  do_query("FLUSH PRIVILEGES;")
+def flush_privs(conn)
+  do_query(conn, "FLUSH PRIVILEGES;")
 end
 
 def write_mysql_conf(f, role, server_id)
@@ -144,8 +132,9 @@ end
 
 def verify_mysql_tcp(master, db, user, port=3306)
   begin
-    conn = Mysql.connect(master, user, "", db)
+    conn = Mysql.connect(master, user, "slavepass", "mysql")
   rescue Exception => ex
+    puts ex.error
     return false
   ensure
     conn.close unless conn.nil?
@@ -245,25 +234,16 @@ def main(args)
   if slaves.include? myname
 
     f = File.open("install/my.cnf", "w")
-    write_mysql_conf(f, 'slave', '2')
+    node = slaves.index(myname) + 2
+    write_mysql_conf(f, 'slave', node)
     f.close()
 
     if not verify_mysql_tcp(master, db, dbuser)
       abort("Couldn't connect to master, exiting")
     end
     
-    do_query("CHANGE MASTER TO MASTER_HOST='master_host_name' MASTER_USER='replication_user_name' MASTER_PASSWORD='replication_password'  MASTER_LOG_FILE='' MASTER_LOG_POS=4;")
-
-    #if not verify_ssh(master, sshuser)
-    #  abort("Couldn't make ssh connection to master")
-    #end
+    do_query("CHANGE MASTER TO MASTER_HOST='%s' MASTER_USER='repl' MASTER_PASSWORD='slavepass'  MASTER_LOG_FILE='' MASTER_LOG_POS=4;" % master)
     
-    #node = slaves.index(myname) + 2
-    #puts "Starting slave configuration, writing repmgr.conf"
-    #write_repmgr_conf(rmf, cluster, db, node, myname)
-    #rmf.close()  
-    #puts "Cloning standby"
-    #clone_standby(db, master, dbuser, sshuser)
     mysql_start()
     role = 'standby'
     sleep(3)
@@ -279,35 +259,33 @@ def main(args)
     puts "done. starting mysql..."
     mysql_start()
 
+    conn = Mysql::new(host='localhost', user='root')   
+    
     puts "sleeping for 5 seconds"
     sleep(5)
     puts "started. setting up security..."
-    remove_anonymous_users()
-    remove_remote_root()
-    remove_test_database()
+    remove_anonymous_users(conn)
+    remove_remote_root(conn)
+    remove_test_database(conn)
     puts "done."
-    create_repl_user(slaves)
-    flush_privs()
+    create_repl_user(conn, slaves, dbuser)
+    flush_privs(conn)
     
-    #install_cert(myname)
+    install_cert(myname)
 
     role = 'master'
+    do_query(conn, "UNLOCK TABLES;")
+
+    slaves.each { |slave|
+      ip = ipfor(slave)
+      Net::SSH.start( slave, ENV['USER'], ) do|ssh|
+        ssh.exec('cd r2; ./repinit.sh')
+      end
+    }
 
   else
     abort("I don't know what I am")
   end
-
-  if not mysql_running()
-    puts "Waiting for mysql to come up"  
-    while not mysql_running()
-      puts '.'
-      sleep(1)
-    end
-  end
-
-  #if not register(role, repmgrcfg)
-  #  puts "NO"
-  #end
 
 end
 
