@@ -87,9 +87,11 @@ end
 
 def create_repl_user(slaves)
   slaves.each { |slave|
+    puts 'Adding slave %s' % slave
     ip = ipfor(slave)
     do_query("CREATE USER 'repl'@'%s' IDENTIFIED BY 'slavepass';" % ip)
     do_query("GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%s';" % ip)
+    do_query("GRANT SELECT ON mysql.help_topic TO 'repl'@'%s';" % ip)
   }
 end
 
@@ -286,6 +288,7 @@ def main(args)
     remove_remote_root()
     remove_test_database()
     puts "done."
+    
     create_repl_user(slaves)
     flush_privs()
     
