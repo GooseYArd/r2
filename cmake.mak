@@ -10,9 +10,9 @@ cmake.tgz := $(cmake.dir).tar.gz
 .cmake.unpack: $(cmake.tgz)
 	tar xvf $^ && touch $(CWD)/$@
 	
-.cmake.config: .cmake.unpack
+.cmake.config: .cmake.unpack .ncurses.install
 	cd $(cmake.dir) && \
-	sh configure $(.cmake.args)  && \
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" sh configure $(.cmake.args)  && \
 	touch $(CWD)/$@
 
 .cmake.make: .cmake.config

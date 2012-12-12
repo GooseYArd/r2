@@ -22,6 +22,7 @@ mysql.args := \
 
 .mysql.make: .mysql.config .cmake.install
 	cd $(mysql.dir) && \
+	PATH=$(PATH):$(CWD)/install/bin && \
 	cmake $(mysql.args) . && \
 	touch $(CWD)/$@
 

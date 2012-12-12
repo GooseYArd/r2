@@ -1,0 +1,6 @@
+include(`config.m4')dnl
+#!/bin/sh
+MYSQL_HOME=ROOT/install/data
+export MYSQL_UNIX_PORT=ROOT/install/mysql.sock
+PATH=ROOT/install/bin:ROOT/install/scripts:$PATH
+./repinit.rb
