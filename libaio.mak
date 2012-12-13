@@ -8,7 +8,7 @@ libaio.args :=
 .libaio.unpack: $(libaio.tgz)
 	tar xvf $^ && touch $(CWD)/$@
 
-.libaio.config: .libaio.unpack .openssl.install .ncurses.install
+.libaio.config: .libaio.unpack
 	cd $(libaio.dir) && \
 	touch $(CWD)/$@
 

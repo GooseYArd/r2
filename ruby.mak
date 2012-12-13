@@ -8,7 +8,7 @@ ruby.tgz := $(ruby.dir).tar.gz
 .ruby.unpack: $(ruby.tgz)
 	tar xvf $^ && touch $(CWD)/$@
 
-.ruby.config: .ruby.unpack .yaml.install .openssl.install .readline.install .ncurses.install
+.ruby.config: .ruby.unpack .yaml.install .openssl.install
 	cd $(ruby.dir) && \
 	LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" ./configure $(.ruby.args)  && \
 	touch $(CWD)/$@
