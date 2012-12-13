@@ -34,7 +34,8 @@ net-sftp
 net-ssh
 net-ssh-gateway
 passenger
-mysql
+mysql2
+activerecord-mysql2-adapter
 polyglot
 rack
 rack-cache
