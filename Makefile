@@ -12,7 +12,8 @@ all: \
 	.percona.install \
 	.ruby.install \
 	.gems.install \
-	.passenger.install
+	.passenger.install \
+	.node.install
 
 %.sh: config.m4 %.sh.in
 	m4 $^ > $@
