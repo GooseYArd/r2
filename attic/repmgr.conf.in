@@ -1,0 +1,4 @@
+cluster=test
+node=1
+node_name=earth
+conninfo='host=node1 user=repmgr dbname=pgbench'

@@ -18,5 +18,5 @@ all: \
 	m4 $^ > $@
 	chmod +x $@
 
-clean: .cmake.clean .libaio.clean .mysql.clean .ruby.clean .yaml.clean .gems.clean .passenger.clea .nginx.clean .curl.clean .openssl.clean .ncurses.clean .readline.clean .zlib.clean .pcre.clean
+clean: .cmake.clean .libaio.clean .mysql.clean .ruby.clean .yaml.clean .gems.clean .passenger.clean .nginx.clean .curl.clean .openssl.clean .ncurses.clean .readline.clean .zlib.clean .pcre.clean
 	rm -rf install pgstart.sh pgstop.sh pginit.sh
