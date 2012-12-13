@@ -1,4 +1,4 @@
-nginx.version := 1.3.8
+nginx.version := 1.3.9
 nginx.dir = nginx-$(nginx.version)
 nginx.tgz := $(nginx.dir).tar.gz
 
