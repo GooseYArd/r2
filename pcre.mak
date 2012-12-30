@@ -25,3 +25,4 @@ pcre.tgz := $(pcre.dir).tar.gz
 
 .pcre.clean:
 	rm -rf $(pcre.dir) .pcre.*
+GLOBAL_CLEAN += .pcre.clean

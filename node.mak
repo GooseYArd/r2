@@ -27,3 +27,4 @@ node.tgz := $(node.dir).tar.gz
 
 .node.clean:
 	rm -rf $(node.dir) .node.*
+GLOBAL_CLEAN += .node.clean

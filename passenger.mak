@@ -14,3 +14,4 @@ INSTALL := $(CWD)/install
 
 .passenger.clean:
 	rm -f .passenger.*
+GLOBAL_CLEAN += .passenger.clean

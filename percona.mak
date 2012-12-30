@@ -42,3 +42,4 @@ percona.args := \
 
 .percona.clean:
 	rm -rf $(percona.dir) .percona.*
+GLOBAL_CLEAN += .percona.clean

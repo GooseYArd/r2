@@ -27,3 +27,5 @@ bison.tgz := $(bison.dir).tar.gz
 
 .bison.clean:
 	rm -rf $(bison.dir) .bison.*
+
+GLOBAL_CLEAN += .bison.clean

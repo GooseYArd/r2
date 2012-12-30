@@ -27,3 +27,4 @@ openssl.tgz := $(openssl.dir).tar.gz
 
 .openssl.clean:
 	rm -rf $(openssl.dir) .openssl.*
+GLOBAL_CLEAN += .openssl.clean

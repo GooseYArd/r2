@@ -30,5 +30,8 @@ bootstrap: $(CXX) $(NCURSESH)
 	m4 $^ > $@
 	chmod +x $@
 
-clean: .percona.clean .bison.clean .cmake.clean .libaio.clean .ruby.clean .yaml.clean .gems.clean .passenger.clean .nginx.clean .curl.clean .openssl.clean .zlib.clean .pcre.clean .sqlite.clean
+foo:
+	echo $(GLOBAL_CLEAN)
+
+clean: $(GLOBAL_CLEAN)
 	rm -rf install pgstart.sh pgstop.sh pginit.sh

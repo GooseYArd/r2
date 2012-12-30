@@ -24,3 +24,4 @@ libaio.args :=
 
 .libaio.clean:
 	rm -rf $(libaio.dir) .libaio.*
+GLOBAL_CLEAN += .libaio.clean

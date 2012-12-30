@@ -22,3 +22,4 @@ andy:
 
 .gems.clean:
 	rm -f .gems.*
+GLOBAL_CLEAN += .gems.clean

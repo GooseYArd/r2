@@ -28,3 +28,4 @@ curl.tgz := $(curl.dir).tar.bz2
 
 .curl.clean:
 	rm -rf $(curl.dir) .curl.*
+GLOBAL_CLEAN += .curl.clean

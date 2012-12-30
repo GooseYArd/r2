@@ -25,3 +25,4 @@ yaml.tgz := $(yaml.dir).tar.gz
 
 .yaml.clean:
 	rm -rf $(yaml.dir) .yaml.*
+GLOBAL_CLEAN += .yaml.clean

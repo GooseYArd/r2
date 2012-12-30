@@ -25,3 +25,4 @@ libxslt.tgz := $(libxslt.dir).tar.gz
 
 .libxslt.clean:
 	rm -rf $(libxslt.dir) .libxslt.*
+GLOBAL_CLEAN += .libxslt.clean

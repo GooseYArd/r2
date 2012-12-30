@@ -27,3 +27,4 @@ sqlite.tgz := $(sqlite.dir).tar.gz
 
 .sqlite.clean:
 	rm -rf $(sqlite.dir) .sqlite.*
+GLOBAL_CLEAN += .sqlite.clean

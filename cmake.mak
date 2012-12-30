@@ -1,3 +1,4 @@
+
 #cmake-2.8.10.2.tar.gz
 
 cmake.version := 2.8.10.2
@@ -27,3 +28,5 @@ cmake.tgz := $(cmake.dir).tar.gz
 
 .cmake.clean:
 	rm -rf $(cmake.dir) .cmake.*
+
+GLOBAL_CLEAN += .cmake.clean

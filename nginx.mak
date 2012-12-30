@@ -7,3 +7,4 @@ nginx.tgz := $(nginx.dir).tar.gz
 .nginx.clean:
 	rm -rf $(nginx.dir)
 	rm -f .nginx.*
+GLOBAL_CLEAN += .nginx.clean

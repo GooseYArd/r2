@@ -25,3 +25,4 @@ zlib.tgz := $(zlib.dir).tar.gz
 
 .zlib.clean:
 	rm -rf $(zlib.dir) .zlib.*
+GLOBAL_CLEAN += .zlib.clean

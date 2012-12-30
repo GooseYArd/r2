@@ -26,3 +26,4 @@ ruby.tgz := $(ruby.dir).tar.gz
 .ruby.clean:
 	rm -rf $(ruby.dir) .ruby.*
 
+GLOBAL_CLEAN += .ruby.clean

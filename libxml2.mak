@@ -25,3 +25,4 @@ libxml2.tgz := $(libxml2.dir).tar.gz
 
 .libxml2.clean:
 	rm -rf $(libxml2.dir) .libxml2.*
+GLOBAL_CLEAN += .libxml2.clean
