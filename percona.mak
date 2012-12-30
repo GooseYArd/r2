@@ -6,9 +6,9 @@ percona.tgz := $(percona.dir).tar.gz
 
 percona.args := \
 	-DCMAKE_INSTALL_PREFIX=$(pfx) \
-	-DWITH_SSL=system \
-	-DCMAKE_C_FLAGS="-I$(CWD)/$(libaio.dir)/src -L$(CWD)/$(libaio.dir)/src -I$(CWD)/install/include" \
-	-DCMAKE_CXX_FLAGS="-I$(CWD)/$(libaio.dir)/src -L$(CWD)/$(libaio.dir)/src -I$(CWD)/install/include" \
+	-DWITH_SSL=bundled \
+	-DCMAKE_C_FLAGS="-I$(CWD)/$(libaio.dir)/src -L$(CWD)/$(libaio.dir)/src" \
+	-DCMAKE_CXX_FLAGS="-I$(CWD)/$(libaio.dir)/src -L$(CWD)/$(libaio.dir)/src" \
 	-DCMAKE_EXE_LINKER_FLAGS="-L$(CWD)/$(libaio.dir)/src -L$(CWD)/install/lib" \
 	-DCMAKE_MODULE_LINKER_FLAGS="-L$(CWD)/$(libaio.dir)/src" \
 	-DCMAKE_SHARED_LINKER_FLAGS="-L$(CWD)/$(libaio.dir)/src"
