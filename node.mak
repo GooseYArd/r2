@@ -1,8 +1,13 @@
 #node-v0.8.15.tar.gz
 
-node.version := 0.8.15
+node.version := 0.8.18
 node.dir := node-v$(node.version)
 node.tgz := $(node.dir).tar.gz
+node.url := http://nodejs.org/dist/v$(node.version)/$(node.tgz)
+
+$(node.tgz): node.sha1
+	wget $(node.url)
+	sha1sum -c $<
 
 .node.args := \
 	--prefix=$(pfx)

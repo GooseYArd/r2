@@ -1,8 +1,13 @@
 # Percona-Server-5.5.28-rel29.2.tar.gz
 
-percona.version := 5.5.28-rel29.2
+percona.version := 5.5.28-rel29.3
 percona.dir := Percona-Server-$(percona.version)
 percona.tgz := $(percona.dir).tar.gz
+percona.url := http://www.percona.com/redir/downloads/Percona-Server-5.5/LATEST/source/$(percona.tgz)
+
+$(percona.tgz): percona.sha1
+	wget $(percona.url)
+	sha1sum -c $<
 
 percona.args := \
 	-DCMAKE_INSTALL_PREFIX=$(pfx) \

@@ -1,6 +1,11 @@
-ruby.version := 1.9.3-p327
+ruby.version := 1.9.3-p374
 ruby.dir := ruby-$(ruby.version)
 ruby.tgz := $(ruby.dir).tar.gz
+ruby.url := http://ftp.ruby-lang.org/pub/ruby/1.9/$(ruby.tgz)
+
+$(ruby.tgz): ruby.sha1
+	wget $(ruby.url)
+	sha1sum -c $<
 
 .ruby.args := \
 	--prefix=$(pfx)

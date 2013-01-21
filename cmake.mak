@@ -1,9 +1,15 @@
 
 #cmake-2.8.10.2.tar.gz
 
-cmake.version := 2.8.10.2
+cmake.majorver := 2.8
+cmake.version := $(cmake.majorver).10.2
 cmake.dir := cmake-$(cmake.version)
 cmake.tgz := $(cmake.dir).tar.gz
+cmake.url := http://www.cmake.org/files/v$(cmake.majorver)/$(cmake-version).tar.gz
+
+$(cmake.tgz): cmake.sha1
+	wget $(cmake.url)
+	sha1sum -c $<
 
 .cmake.args := \
 	--prefix=$(pfx)

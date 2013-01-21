@@ -1,6 +1,11 @@
 libxml2.version := 2.9.0
 libxml2.dir := libxml2-$(libxml2.version)
 libxml2.tgz := $(libxml2.dir).tar.gz
+libxml2.url := ftp://xmlsoft.org/libxml2/$(libxml2.tgz)
+
+$(libxml2.tgz): libxml2.sha1
+	wget $(libxml2.url)
+	sha1sum -c $<
 
 .libxml2.args := \
 	--prefix=$(pfx)

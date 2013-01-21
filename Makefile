@@ -24,7 +24,10 @@ $(CXX):
 $(NCURSESH): /usr/include/ncurses.h
 	sudo aptitude install libncurses5-dev
 
-bootstrap: $(CXX) $(NCURSESH)
+$(READLINEH): /usr/include/readline/readline.h
+	sudo aptitude install libreadline-dev libreadline6-dev
+
+bootstrap: $(CXX) $(NCURSESH) $(READLINEH)
 
 %.sh: config.m4 %.sh.in
 	m4 $^ > $@
