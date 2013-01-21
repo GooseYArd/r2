@@ -2,6 +2,11 @@ CWD = $(PWD)
 pfx := $(CWD)/install
 DEST :=
 
+GETURL := wget --no-use-server-timestamps
+
+%.mak: %.mak.in r2.m4
+	m4 $< > $@
+
 include *.mak
 
 CFLAGS := -I$(pfx)/include

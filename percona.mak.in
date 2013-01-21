@@ -1,13 +1,13 @@
-# Percona-Server-5.5.28-rel29.2.tar.gz
+define(`R2_PKG', `percona')dnl
+define(`R2_VERSION', `5.5.28-rel29.3')dnl
+define(`R2_DIR', `Percona-Server-R2_VERSION')dnl
+define(`R2_DIST', `R2_DIR.tar.gz')dnl
+define(`R2_URL', `http://www.percona.com/redir/downloads/Percona-Server-5.5/LATEST/source/R2_DIST')dnl
 
-percona.version := 5.5.28-rel29.3
-percona.dir := Percona-Server-$(percona.version)
-percona.tgz := $(percona.dir).tar.gz
-percona.url := http://www.percona.com/redir/downloads/Percona-Server-5.5/LATEST/source/$(percona.tgz)
+include(`r2.m4')
 
-$(percona.tgz): percona.sha1
-	wget $(percona.url)
-	sha1sum -c $<
+R2_DECLS
+R2_RULE_UNPACK
 
 percona.args := \
 	-DCMAKE_INSTALL_PREFIX=$(pfx) \
@@ -18,24 +18,14 @@ percona.args := \
 	-DCMAKE_MODULE_LINKER_FLAGS="-L$(CWD)/$(libaio.dir)/src" \
 	-DCMAKE_SHARED_LINKER_FLAGS="-L$(CWD)/$(libaio.dir)/src"
 
-.percona.unpack: $(percona.tgz)
-	tar xvf $^ && touch $(CWD)/$@
-
 .percona.config: .cmake.install .percona.unpack .bison.install .openssl.install .zlib.install .libaio.install
 	cd $(percona.dir) && \
 	PATH=$(PATH):$(CWD)/install/bin && \
 	cmake $(percona.args) . && \
 	touch $(CWD)/$@
 
-.percona.make: .percona.config
-	cd $(percona.dir) && \
-	make -j4 && \
-	touch $(CWD)/$@
-
-.percona.install: .percona.make
-	cd $(percona.dir) && \
-	make install $(DEST) && \
-	touch $(CWD)/$@
+R2_RULE_MAKE
+R2_RULE_INSTALL
 
 .mysqlbench.make: .percona.config
 	cd $(percona.dir)/contrib/mysqlbench && \
@@ -45,10 +35,4 @@ percona.args := \
 	cd $(percona.dir)/contrib/mysqlbench && \
 	make install
 
-.percona.clean:
-	rm -rf $(percona.dir) .percona.*
-GLOBAL_CLEAN += .percona.clean
-
-.percona.distclean:
-	rm -f $(percona.tgz)
-GLOBAL_DISTCLEAN += .percona.distclean
+R2_RULE_CLEAN
