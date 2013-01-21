@@ -18,7 +18,6 @@ CXX := /usr/bin/g++
 all: \
 	.percona.install \
 	.ruby.install \
-	.gems.install \
 	.passenger.install \
 	.node.install \
 	.sqlite.install
