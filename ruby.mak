@@ -32,3 +32,7 @@ $(ruby.tgz): ruby.sha1
 	rm -rf $(ruby.dir) .ruby.*
 
 GLOBAL_CLEAN += .ruby.clean
+
+.ruby.distclean:
+	rm -f $(ruby.tgz)
+GLOBAL_DISTCLEAN += .ruby.distclean

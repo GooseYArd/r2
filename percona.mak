@@ -48,3 +48,7 @@ percona.args := \
 .percona.clean:
 	rm -rf $(percona.dir) .percona.*
 GLOBAL_CLEAN += .percona.clean
+
+.percona.distclean:
+	rm -f $(percona.tgz)
+GLOBAL_DISTCLEAN += .percona.distclean

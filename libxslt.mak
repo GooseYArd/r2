@@ -7,8 +7,6 @@ $(libxslt.tgz): libxslt.sha1
 	wget $(libxslt.url)
 	sha1sum -c $<
 
-
-
 .libxslt.args := \
 	--prefix=$(pfx) \
 	--without-python \
@@ -35,3 +33,7 @@ $(libxslt.tgz): libxslt.sha1
 .libxslt.clean:
 	rm -rf $(libxslt.dir) .libxslt.*
 GLOBAL_CLEAN += .libxslt.clean
+
+.libxslt.distclean:
+	rm -f $(libxslt.tgz)
+GLOBAL_DISTCLEAN += .libxslt.distclean

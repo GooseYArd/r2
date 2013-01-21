@@ -38,3 +38,5 @@ foo:
 
 clean: $(GLOBAL_CLEAN)
 	rm -rf install pgstart.sh pgstop.sh pginit.sh
+
+distclean: clean $(GLOBAL_DISTCLEAN)

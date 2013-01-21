@@ -33,3 +33,7 @@ $(openssl.tgz): openssl.sha1
 .openssl.clean:
 	rm -rf $(openssl.dir) .openssl.*
 GLOBAL_CLEAN += .openssl.clean
+
+.openssl.distclean:
+	rm -f $(openssl.tgz)
+GLOBAL_DISTCLEAN += .openssl.distclean

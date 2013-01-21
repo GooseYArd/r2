@@ -2,6 +2,11 @@
 libaio.version := 0.3.109
 libaio.dir := libaio-$(libaio.version)
 libaio.tgz := libaio_$(libaio.version).orig.tar.gz 
+libaio.url := http://ftp.de.debian.org/debian/pool/main/liba/libaio/$(libaio.tgz)
+
+$(libaio.tgz): libaio.sha1
+	wget $(libaio.url)
+	sha1sum -c $<
 
 libaio.args :=
 
@@ -25,3 +30,7 @@ libaio.args :=
 .libaio.clean:
 	rm -rf $(libaio.dir) .libaio.*
 GLOBAL_CLEAN += .libaio.clean
+
+.libaio.distclean:
+	rm -f $(libaio.tgz)
+GLOBAL_DISTCLEAN += .libaio.distclean

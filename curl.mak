@@ -1,6 +1,11 @@
 curl.version := 7.28.1
 curl.dir := curl-$(curl.version)
 curl.tgz := $(curl.dir).tar.bz2
+curl.url := http://curl.haxx.se/download/$(curl.tgz)
+
+$(curl.tgz): curl.sha1
+	wget $(curl.url)
+	sha1sum -c $<
 
 .curl.args := \
 	--prefix=$(pfx) \
@@ -29,3 +34,8 @@ curl.tgz := $(curl.dir).tar.bz2
 .curl.clean:
 	rm -rf $(curl.dir) .curl.*
 GLOBAL_CLEAN += .curl.clean
+
+.curl.distclean:
+	rm -f $(curl.tgz)
+
+GLOBAL_DISTCLEAN += .curl.distclean

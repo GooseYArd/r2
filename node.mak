@@ -1,4 +1,3 @@
-#node-v0.8.15.tar.gz
 
 node.version := 0.8.18
 node.dir := node-v$(node.version)
@@ -33,3 +32,7 @@ $(node.tgz): node.sha1
 .node.clean:
 	rm -rf $(node.dir) .node.*
 GLOBAL_CLEAN += .node.clean
+
+.node.distclean:
+	rm -f $(node.tgz)
+GLOBAL_DISTCLEAN += .node.distclean

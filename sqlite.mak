@@ -1,14 +1,19 @@
 #‘sqlite-autoconf-3071501.tar.gz’
 
-sqlite.version := 3071501
+sqlite.version := 3071502
 sqlite.dir := sqlite-autoconf-$(sqlite.version)
 sqlite.tgz := $(sqlite.dir).tar.gz
+sqlite.url := http://www.sqlite.org/$(sqlite.tgz)
+
+$(sqlite.tgz):
+	wget $(sqlite.url)
 
 .sqlite.args := \
 	--prefix=$(pfx)
 
-.sqlite.unpack: $(sqlite.tgz)
-	tar xvf $^ && touch $(CWD)/$@
+.sqlite.unpack: $(sqlite.tgz) sqlite.sha1
+	sha1sum -c sqlite.sha1
+	tar xvf $< && touch $(CWD)/$@
 
 .sqlite.config: .sqlite.unpack
 	cd $(sqlite.dir) && \
@@ -28,3 +33,7 @@ sqlite.tgz := $(sqlite.dir).tar.gz
 .sqlite.clean:
 	rm -rf $(sqlite.dir) .sqlite.*
 GLOBAL_CLEAN += .sqlite.clean
+
+.sqlite.distclean:
+	rm -f $(sqlite.tgz)
+GLOBAL_DISTCLEAN += .sqlite.distclean

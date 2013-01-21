@@ -31,3 +31,7 @@ $(libxml2.tgz): libxml2.sha1
 .libxml2.clean:
 	rm -rf $(libxml2.dir) .libxml2.*
 GLOBAL_CLEAN += .libxml2.clean
+
+.libxml2.distclean:
+	rm -f $(libxml2.tgz)
+GLOBAL_DISTCLEAN += .libxml2.distclean

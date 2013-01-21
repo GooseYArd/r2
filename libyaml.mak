@@ -1,28 +1,38 @@
-yaml.version := 0.1.4
-yaml.dir := yaml-$(yaml.version)
-yaml.tgz := $(yaml.dir).tar.gz
+libyaml.version := 0.1.4
+libyaml.dir := yaml-$(libyaml.version)
+libyaml.tgz := $(libyaml.dir).tar.gz
+libyaml.url := http://pylibyaml.org/download/libyaml/$(libyaml.tgz)
 
-.yaml.args := \
+.libyaml.args := \
 	--prefix=$(pfx)
 
-.yaml.unpack: $(yaml.tgz)
-	tar xvf $^ && touch $(CWD)/$@
+$(libyaml.tgz):
+	wget $(libyaml.url)
 
-.yaml.config: .yaml.unpack
-	cd $(yaml.dir) && \
-	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.yaml.args)  && \
+.libyaml.unpack: $(libyaml.tgz) libyaml.sha1
+	sha1sum -c libyaml.sha1
+	tar xvf $< && touch $(CWD)/$@
+
+.libyaml.config: .libyaml.unpack
+	cd $(libyaml.dir) && \
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.libyaml.args)  && \
 	touch $(CWD)/$@
 
-.yaml.make: .yaml.config
-	cd $(yaml.dir) && \
+.libyaml.make: .libyaml.config
+	cd $(libyaml.dir) && \
 	$(MAKE) -j4 && \
 	touch $(CWD)/$@
 
-.yaml.install: .yaml.make
-	cd $(yaml.dir) && \
+.libyaml.install: .libyaml.make
+	cd $(libyaml.dir) && \
 	make install $(DEST) && \
 	touch $(CWD)/$@
 
-.yaml.clean:
-	rm -rf $(yaml.dir) .yaml.*
-GLOBAL_CLEAN += .yaml.clean
+.libyaml.clean:
+	rm -rf $(libyaml.dir) .libyaml.*
+GLOBAL_CLEAN += .libyaml.clean
+
+.libyaml.distclean:
+	rm -f $(libyaml.tgz)
+
+GLOBAL_DISTCLEAN += .libyaml.distclean
