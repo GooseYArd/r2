@@ -1,5 +1,5 @@
 define(`R2_PKG', `node')dnl
-define(`R2_VERSION', `0.8.18')dnl
+define(`R2_VERSION', `v0.8.18')dnl
 define(`R2_DIR', `R2_PKG-R2_VERSION')dnl
 define(`R2_DIST', `R2_DIR.tar.gz')dnl
 define(`R2_URL', `http://nodejs.org/dist/R2_VERSION/R2_DIST')dnl

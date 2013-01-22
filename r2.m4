@@ -4,7 +4,6 @@ R2_PKG.dir := R2_DIR
 R2_PKG.tgz := R2_DIST
 R2_PKG.url := R2_URL
 )dnl
-define(DLR, `$$')
 dnl
 define(`R2_RULE_FETCH',
 .R2_PKG.fetch:
@@ -13,7 +12,7 @@ define(`R2_RULE_FETCH',
 )dnl
 dnl
 define(`R2_CFG_ARGS',
-.R2_PKG.args := \
+R2_PKG.args := \
 	--prefix=$(pfx)
 )dnl
 dnl
@@ -26,7 +25,7 @@ dnl
 define(`R2_RULE_CONFIG',
 .R2_PKG.config: .R2_PKG.unpack
 	cd $(R2_PKG.dir) && \
-	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.R2_PKG.args)  && \
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" ./configure $(R2_PKG.args)  && \
 	touch $(CWD)/.R2_PKG.config
 )dnl
 dnl
