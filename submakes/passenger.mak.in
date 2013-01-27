@@ -1,0 +1,25 @@
+define(`R2_PKG', `passenger')dnl
+define(`R2_VERSION', `3.0.19')dnl
+define(`R2_DIR', `R2_PKG-R2_VERSION')dnl
+define(`R2_DIST', `R2_DIR.tar.gz')dnl
+define(`R2_URL', `http://rubyforge.org/frs/download.php/76675/R2_DIST')dnl
+
+include(`r2.m4')
+R2_DEFAULT_RULES_NOINSTALL
+
+passenger.args := \
+	       --auto \
+	       --apxs2-path=$(pfx)/bin/apxs \
+	       --apr-config-path=$(pfx)/bin/apr-1-config
+
+.passenger.install: .passenger.unpack .httpd.install .curl.install .openssl.install .zlib.install .pcre.install        
+	export PATH=$(pfx)/bin:$(PATH) && \
+	export CFLAGS="$(CFLAGS) $(LDFLAGS)" && \
+	export CXXFLAGS="$(CXXFLAGS)" && \
+	export LDFLAGS="$(LDFLAGS)" && \
+	R2_DIR/bin/passenger-install-apache2-module $(passenger.args)
+	touch $@
+
+.passenger.clean:
+	rm -f .passenger.*
+GLOBAL_CLEAN += .passenger.clean

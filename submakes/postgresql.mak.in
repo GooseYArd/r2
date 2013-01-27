@@ -1,0 +1,19 @@
+define(`R2_PKG', `postgresql')dnl
+define(`R2_VERSION', `9.2.2')dnl
+define(`R2_DIR', `R2_PKG-R2_VERSION')dnl
+define(`R2_DIST', `R2_DIR.tar.bz2')dnl
+define(`R2_URL', `http://ftp.postgresql.org/pub/source/v'R2_VERSION/R2_DIST)dnl
+
+include(`r2.m4')
+R2_DEFAULT_RULES_NOCONFIG
+
+.postgresql.args := \
+	--prefix=$(pfx) \
+	--with-openssl \
+	--with-libxml \
+	--with-libxslt
+
+.postgresql.config: .postgresql.unpack .libxslt.install .libxml2.install .openssl.install
+	cd $(postgresql.dir) && \
+	LDFLAGS="$(LDFLAGS) -L$(pfx)/lib" CFLAGS="$(CFLAGS) -I$(pfx)/include/libxml2" CXXFLAGS="$(CFLAGS) -I$(pfx)/include/libxml2" sh configure $(.postgresql.args)  && \
+	touch $(CWD)/$@

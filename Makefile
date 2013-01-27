@@ -5,7 +5,7 @@ DEST :=
 %.mak: %.mak.in r2.m4
 	m4 $< > $@
 
-SUBMAKES := $(wildcard *.mak.in)
+SUBMAKES := $(wildcard submakes/*.mak.in)
 
 include $(SUBMAKES:mak.in=mak)
 
@@ -16,11 +16,20 @@ LDFLAGS := -L$(pfx)/lib
 CXX := /usr/bin/g++
 
 all: \
-	.percona.install \
 	.ruby.install \
 	.passenger.install \
 	.node.install \
-	.sqlite.install
+	.sqlite.install \
+	.rails.install
+
+# Misc small targetrs
+.bundler.install: .ruby.install
+	$(pfx)/bin/gem install bundler -v 1.2.3
+	$(pfx)/bin/bundle config build.mysql --with-mysql-config=$(pfx)/bin/mysql_config
+
+.rails.install: .bundler.install
+	$(pfx)/bin/gem install rails -v 3.2.11
+
 
 $(CXX):
 	sudo aptitude install g++
@@ -31,7 +40,13 @@ $(NCURSESH): /usr/include/ncurses.h
 $(READLINEH): /usr/include/readline/readline.h
 	sudo aptitude install libreadline-dev libreadline6-dev
 
-bootstrap: $(CXX) $(NCURSESH) $(READLINEH)
+$(PAM_APPLH): /usr/include/security/pam_appl.h
+	sudo aptitude install libpam0g-dev
+
+$(EVENTH): /usr/include/event.h
+	sudo aptitude install libevent-dev
+
+bootstrap: $(CXX) $(NCURSESH) $(READLINEH) $(PAM_APPLH) $(EVENTH)
 
 %.sh: config.m4 %.sh.in
 	m4 $^ > $@

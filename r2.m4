@@ -4,6 +4,7 @@ R2_PKG.dir := R2_DIR
 R2_PKG.tgz := R2_DIST
 R2_PKG.url := R2_URL
 )dnl
+define(`R2_SHA1DIR', `shasums')dnl
 dnl
 define(`R2_RULE_FETCH',
 .R2_PKG.fetch:
@@ -54,6 +55,12 @@ GLOBAL_CLEAN += .R2_PKG.clean
 GLOBAL_DISTCLEAN += .R2_PKG.distclean
 )dnl
 dnl
+define(R2_DEFAULT_RULES_NOINSTALL,
+R2_DECLS
+R2_RULE_FETCH
+R2_RULE_UNPACK
+R2_RULE_CLEAN
+)dnl
 define(R2_DEFAULT_RULES_NOCONFIG,
 R2_DECLS
 R2_RULE_FETCH

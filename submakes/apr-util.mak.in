@@ -1,0 +1,20 @@
+define(`R2_PKG', `apr-util')dnl
+define(`R2_VERSION', `1.5.1')dnl
+define(`R2_DIR', `R2_PKG-R2_VERSION')dnl
+define(`R2_DIST', `R2_DIR.tar.bz2')dnl
+define(`R2_URL', `http://mirror.cogentco.com/pub/apache/apr/R2_DIST')
+include(`r2.m4')
+R2_DEFAULT_RULES_NOCONFIG
+
+R2_PKG.args := \
+	    --prefix=$(pfx) \
+	    --with-apr=$(pfx)/bin/apr-1-config
+
+.R2_PKG.config: .R2_PKG.unpack .apr.install
+	cd $(R2_PKG.dir) && \
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(R2_PKG.args)  && \
+	touch $(CWD)/.R2_PKG.config
+
+
+
+
