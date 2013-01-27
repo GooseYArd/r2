@@ -12,7 +12,7 @@ R2_DEFAULT_RULES_NOCONFIG
 	--with-ssl=$(CWD)/install
 
 .curl.config: .curl.unpack .openssl.install
-	cd $(curl.dir) && \
+	cd R2_BUILD/$(curl.dir) && \
 	CFLAGS="$(CFLAGS) -DOPENSSL_NO_SSL2" CXXFLAGS="$(CFLAGS) -DOPENSSL_NO_SSL2" sh configure $(.curl.args)  && \
 	sed -i -e s/HAVE_SSLV2_CLIENT_METHOD\ 1/HAVE_SSLV2_CLIENT_METHOD\ 0/ lib/curl_config.h && \
 	touch $(CWD)/$@

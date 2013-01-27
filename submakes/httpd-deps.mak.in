@@ -1,0 +1,15 @@
+define(`R2_PKG', `httpd-deps')dnl
+define(`R2_VERSION', `2.4.3')dnl
+define(`R2_DIR', `httpd-R2_VERSION-deps')dnl
+define(`R2_DIST', `R2_DIR.tar.bz2')dnl
+define(`R2_URL', `http://www.gtlib.gatech.edu/pub/apache/httpd/R2_DIST')
+
+include(`r2.m4')
+
+R2_DEFAULT_RULES_NOCONFIG
+
+.R2_PKG.config: .R2_PKG.unpack
+	touch $(CWD)/.R2_PKG.config
+
+
+

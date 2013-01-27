@@ -45,6 +45,9 @@ if __name__ == "__main__":
     fmt = "{:<26} {:20}"
     pkgs = []
 
+    submake_dir = "submakes"
+    watch_dir = "watch"
+
     if args.package:
         if not args.package.endswith(sfx):
             p = args.package + sfx
@@ -56,12 +59,13 @@ if __name__ == "__main__":
         else:
             pkgs.append(args.package)
     else:
-        pkgs = glob("*%s" % sfx)
+        pkgs = glob(os.path.join(submake_dir, "*%s" % sfx))
  
     for fn in pkgs:
         pkg = basename(fn).replace(sfx, "")
         v = get_version_string(fn)
         watchfile = fn.replace(sfx, ".watch")
+        watchfile = watchfile.replace(submake_dir, watch_dir)
         state = "missing watchfile"
         if os.path.exists(watchfile):
             state = "current"

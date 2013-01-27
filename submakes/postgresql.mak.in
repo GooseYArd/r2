@@ -14,6 +14,6 @@ R2_DEFAULT_RULES_NOCONFIG
 	--with-libxslt
 
 .postgresql.config: .postgresql.unpack .libxslt.install .libxml2.install .openssl.install
-	cd $(postgresql.dir) && \
+	cd R2_BUILD/$(postgresql.dir) && \
 	LDFLAGS="$(LDFLAGS) -L$(pfx)/lib" CFLAGS="$(CFLAGS) -I$(pfx)/include/libxml2" CXXFLAGS="$(CFLAGS) -I$(pfx)/include/libxml2" sh configure $(.postgresql.args)  && \
 	touch $(CWD)/$@

@@ -13,6 +13,6 @@ R2_DEFAULT_RULES_NOCONFIG
 	--with-libxml-prefix=$(pfx)	
 
 .libxslt.config: .libxslt.unpack .libxml2.install
-	cd $(libxslt.dir) && \
+	cd R2_BUILD/$(libxslt.dir) && \
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(.libxslt.args)  && \
 	touch $(CWD)/$@

@@ -11,6 +11,6 @@ R2_DEFAULT_RULES_NOCONFIG
 	--prefix=$(pfx)
 
 .ruby.config: .ruby.unpack .libyaml.install .openssl.install
-	cd $(ruby.dir) && \
+	cd R2_BUILD/$(ruby.dir) && \
 	LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" ./configure $(.ruby.args)  && \
 	touch $(CWD)/$@

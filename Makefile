@@ -25,11 +25,16 @@ all: \
 # Misc small targetrs
 .bundler.install: .ruby.install
 	$(pfx)/bin/gem install bundler -v 1.2.3
-	$(pfx)/bin/bundle config build.mysql --with-mysql-config=$(pfx)/bin/mysql_config
+	$(pfx)/bin/bundle config build.postgresql --with-pg-config=$(pfx)/bin/pg_config
+	touch $@
+
+.rack.install: .bundler.install
+	$(pfx)/bin/gem install rack -v 1.4.4
+	touch $@
 
 .rails.install: .bundler.install
 	$(pfx)/bin/gem install rails -v 3.2.11
-
+	touch $@
 
 $(CXX):
 	sudo aptitude install g++

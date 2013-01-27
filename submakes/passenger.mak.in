@@ -12,14 +12,18 @@ passenger.args := \
 	       --apxs2-path=$(pfx)/bin/apxs \
 	       --apr-config-path=$(pfx)/bin/apr-1-config
 
-.passenger.install: .passenger.unpack .httpd.install .curl.install .openssl.install .zlib.install .pcre.install        
+.passenger.install: .rack.install .passenger.unpack .httpd.install .curl.install .openssl.install .zlib.install .pcre.install        
 	export PATH=$(pfx)/bin:$(PATH) && \
 	export CFLAGS="$(CFLAGS) $(LDFLAGS)" && \
 	export CXXFLAGS="$(CXXFLAGS)" && \
 	export LDFLAGS="$(LDFLAGS)" && \
-	R2_DIR/bin/passenger-install-apache2-module $(passenger.args)
+	R2_BUILD/R2_DIR/bin/passenger-install-apache2-module $(passenger.args)
 	touch $@
 
 .passenger.clean:
-	rm -f .passenger.*
+	rm -rf .passenger.* R2_DIR
 GLOBAL_CLEAN += .passenger.clean
+
+.passenger.distclean:
+	rm -rf R2_DIST
+GLOBAL_DISTCLEAN += .passenger.distclean

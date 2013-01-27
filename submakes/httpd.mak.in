@@ -10,13 +10,11 @@ R2_DEFAULT_RULES_NOCONFIG
 
 R2_PKG.args := \
 	    --prefix=$(pfx) \
-	    --with-apr=$(pfx)/bin/apr-1-config \
-	    --with-apr-util=$(pfx)/bin/apu-1-config \
 	    --with-ssl=$(pfx) \
 	    --with-pcre=$(pfx)
 
-.R2_PKG.config: .R2_PKG.unpack .apr.install .apr-util.install .pcre.install .openssl.install
-	cd $(R2_PKG.dir) && \
+.R2_PKG.config: .R2_PKG.unpack .httpd-deps.config .pcre.install .openssl.install
+	cd R2_BUILD/$(R2_PKG.dir) && \
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" sh configure $(R2_PKG.args)  && \
 	touch $(CWD)/.R2_PKG.config
 

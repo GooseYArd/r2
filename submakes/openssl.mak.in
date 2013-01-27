@@ -14,12 +14,12 @@ R2_RULE_UNPACK
 	--prefix=$(pfx) --openssldir=$(pfx)/openssl shared
 
 .openssl.config: .openssl.unpack .zlib.install
-	cd $(openssl.dir) && \
+	cd R2_BUILD/$(openssl.dir) && \
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" ./config $(.openssl.args)  && \
 	touch $(CWD)/$@
 
 .openssl.make: .openssl.config
-	cd $(openssl.dir) && \
+	cd R2_BUILD/$(openssl.dir) && \
 	sed 's# libcrypto.a##;s# libssl.a##' < Makefile > Makefile.tmp && \
 	mv Makefile.tmp Makefile && \
 	$(MAKE) && \
