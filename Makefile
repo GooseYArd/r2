@@ -25,7 +25,7 @@ all: \
 # Misc small targetrs
 .bundler.install: .ruby.install
 	$(pfx)/bin/gem install bundler -v 1.2.3
-	$(pfx)/bin/bundle config build.postgresql --with-pg-config=$(pfx)/bin/pg_config
+	$(pfx)/bin/bundle config build.pg --with-pg-config=$(pfx)/bin/pg_config
 	touch $@
 
 .rack.install: .bundler.install
@@ -34,6 +34,13 @@ all: \
 
 .rails.install: .bundler.install
 	$(pfx)/bin/gem install rails -v 3.2.11
+	touch $@
+
+.parseconfig.install: .bundler.install
+	$(pfx)/bin/gem install parseconfig -v 1.0.2
+	$(pfx)/bin/gem install pg -v 0.14.1
+	$(pfx)/bin/gem install net-ssh -v 2.6.3
+
 	touch $@
 
 $(CXX):

@@ -1,2 +1,2 @@
 version=3
-ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-(.*)\.zip
+http://sf.net/pcre/pcre-(.+)\.tar\.gz

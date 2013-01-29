@@ -4,8 +4,19 @@ import os
 import subprocess
 import glob
 import argparse
+import sys
+import logging
 from os.path import basename
 from glob import glob
+
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('arrests')
+logger.setLevel(logging.ERROR)
+sh = logging.StreamHandler(stream=sys.stderr)
+sh.setLevel(logging.ERROR)
+sh.setFormatter(formatter)
+logger.addHandler(sh)
 
 def get_version_string(fn):
     tmp = tempfile.NamedTemporaryFile(delete=False)
@@ -23,10 +34,15 @@ def get_version_string(fn):
     return l
 
 def update_available(pkg, watchfile, curver):
-    cmd = "/usr/bin/uscan --package %s --report --watchfile %s --upstream-version %s" % (pkg, watchfile, curver)
+    cmd = "USCAN_PASV=no /usr/bin/uscan --package %s --report --watchfile %s --upstream-version %s" % (pkg, watchfile, curver)
+    logger.debug("USCAN command: %s" % cmd)
     p = subprocess.Popen(cmd,
                          shell=True,
-                         stdout=subprocess.PIPE)
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+
+    for l in p.stdout:
+        print l
     p.wait()
     ret = p.returncode
 
@@ -50,7 +66,7 @@ if __name__ == "__main__":
 
     if args.package:
         if not args.package.endswith(sfx):
-            p = args.package + sfx
+            p = os.path.join(submake_dir, args.package + sfx)
             if os.path.exists(p):
                 pkgs.append(p)
             else:
