@@ -15,7 +15,13 @@ LDFLAGS := -L$(pfx)/lib
 
 CXX := /usr/bin/g++
 
+%/.exist:
+	mkdir -p $(@D)
+	touch $@
+
 all: \
+	dists/.exist \
+	build/.exist \
 	.ruby.install \
 	.passenger.install \
 	.node.install \

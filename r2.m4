@@ -10,7 +10,7 @@ R2_PKG.url := R2_URL
 dnl
 define(`R2_RULE_FETCH',
 .R2_PKG.fetch:
-	cd R2_DISTS && wget -N $(R2_PKG.url)
+	cd R2_DISTS && wget --no-passive-ftp -N $(R2_PKG.url)
 	touch -a $(CWD)/.R2_PKG.fetch
 )dnl
 dnl
@@ -52,7 +52,7 @@ define(`R2_RULE_CLEAN',
 GLOBAL_CLEAN += .R2_PKG.clean
 
 .R2_PKG.distclean:
-	rm -f $(R2_PKG.tgz)
+	rm -f R2_DISTS/$(R2_PKG.tgz)
 
 GLOBAL_DISTCLEAN += .R2_PKG.distclean
 )dnl

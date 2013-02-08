@@ -21,9 +21,9 @@ passenger.args := \
 	touch $@
 
 .passenger.clean:
-	rm -rf .passenger.* R2_DIR
+	rm -rf .passenger.* R2_BUILD/R2_DIR
 GLOBAL_CLEAN += .passenger.clean
 
 .passenger.distclean:
-	rm -rf R2_DIST
+	rm -rf R2_DISTS/R2_DIST
 GLOBAL_DISTCLEAN += .passenger.distclean

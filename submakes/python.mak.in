@@ -1,0 +1,9 @@
+define(`R2_PKG', `python')dnl
+define(`R2_VERSION', `2.7.3')dnl
+define(`R2_DIR', `Python-R2_VERSION')dnl
+define(`R2_DIST', `R2_DIR.tar.bz2')dnl
+define(`R2_URL', `http://www.python.org/ftp/python/R2_VERSION/R2_DIST')dnl
+
+include(`r2.m4')
+R2_DEFAULT_RULES
+
