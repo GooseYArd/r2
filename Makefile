@@ -44,23 +44,31 @@ all: \
 
 .parseconfig.install: .bundler.install
 	$(pfx)/bin/gem install parseconfig -v 1.0.2
-	$(pfx)/bin/gem install pg -v 0.14.1
-	$(pfx)/bin/gem install net-ssh -v 2.6.6
 	touch $@
+
+.pg.install: .postgresql.install
+	$(pfx)/bin/gem install pg -v 0.14.1
+
+.netssh.install: 
+	$(pfx)/bin/gem install net-ssh -v 2.6.6
 
 $(CXX):
 	sudo aptitude install g++
 
-$(NCURSESH): /usr/include/ncurses.h
+NCURSESH := /usr/include/ncurses.h
+$(NCURSESH):
 	sudo aptitude install libncurses5-dev
 
-$(READLINEH): /usr/include/readline/readline.h
+READLINEH := /usr/include/readline/readline.h
+$(READLINEH):
 	sudo aptitude install libreadline-dev libreadline6-dev
 
-$(PAM_APPLH): /usr/include/security/pam_appl.h
+PAM_APPLH := /usr/include/security/pam_appl.h
+$(PAM_APPLH):
 	sudo aptitude install libpam0g-dev
 
-$(EVENTH): /usr/include/event.h
+EVENTH := /usr/include/event.h
+$(EVENTH):
 	sudo aptitude install libevent-dev
 
 bootstrap: $(CXX) $(NCURSESH) $(READLINEH) $(PAM_APPLH) $(EVENTH)

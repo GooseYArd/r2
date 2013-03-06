@@ -19,10 +19,15 @@ def pgenv_call(cmd)
 end  
 
 def install_cert(host)
-  
-  fns = { 'install/data/server.crt' => "ca/%s.cert" % host,
-    'install/data/server.key' => "certs/%s.key" % host,
-    'install/data/root.crt' => "ca/ca-cert.pem", }
+
+  certdir = 'install/data'
+  if not File.exists?(certdir)
+    FileUtils.mkdir_p(certdir)
+  end
+
+  fns = { File.join(certdir, 'server.crt') => "../ca/%s.cert" % host,
+          File.join(certdir, 'server.key') => "../ca/%s.key" % host,
+          File.join(certdir, 'root.crt') => "../ca/ca-cert.pem", }
   
   fns.each { |dst, src| 
     if not File.exists?(src)
@@ -169,7 +174,13 @@ def main(args)
   
   cfg = ParseConfig.new($defcfg)
 
-  slaves = cfg['replication']['slaves'].split(" ")
+  slaves = []
+
+  cfgslaves = cfg['replication']['slaves']
+  if cfgslaves != nil
+      slaves = cfgslaves.split(" ")
+  end
+
   cluster = cfg['replication']['cluster']
   master = cfg['replication']['master']
   db = cfg['replication']['database']
@@ -183,7 +194,12 @@ def main(args)
     system('rm -rf install/data')
   end
 
-  repmgrcfg = "install/etc/repmgr.conf"
+  etcdir = "install/etc"
+  if not File.exists?(etcdir)
+    FileUtils.mkdir_p(etcdir)
+  end
+
+  repmgrcfg = File.join(etcdir, "repmgr.conf")
   rmf = File.new(repmgrcfg, 'w')
   role = nil
 
