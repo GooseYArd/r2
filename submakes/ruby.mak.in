@@ -1,5 +1,5 @@
 define(`R2_PKG', `ruby')dnl
-define(`R2_VERSION', `1.9.3-p385')dnl
+define(`R2_VERSION', `1.9.3-p392')dnl
 define(`R2_DIR', `R2_PKG-R2_VERSION')dnl
 define(`R2_DIST', `R2_DIR.tar.gz')dnl
 define(`R2_URL', `http://ftp.ruby-lang.org/pub/ruby/1.9/R2_DIST')dnl
