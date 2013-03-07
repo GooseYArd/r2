@@ -1,0 +1,32 @@
+define(`R2_PKG', `jdk')dnl
+define(`R2_REV', `17')dnl
+define(`R2_VERSION', `7u'R2_REV)dnl
+define(`R2_ARCH', i586)dnl
+define(`R2_DIR', `jdk1.7.0_'R2_REV)dnl
+define(`R2_DIST', `R2_PKG-R2_VERSION-linux-R2_ARCH.tar.gz')dnl
+define(`R2_URL', `http://download.oracle.com/otn-pub/java/jdk/R2_VERSION-R2_BUILD/R2_DIST')dnl
+
+include(`r2.m4')
+
+R2_PKG.version := R2_VERSION
+R2_PKG.dir := R2_DIR
+R2_PKG.tgz := R2_DIST
+R2_PKG.url := R2_URL
+
+.R2_PKG.fetch:
+	cd R2_DISTS && wget --no-cookies --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com" -N $(R2_PKG.url)
+	touch -a $(CWD)/.R2_PKG.fetch
+
+.R2_PKG.unpack: .R2_PKG.fetch shasums/R2_PKG.sha1
+	cd $(CWD)/dists && sha1sum -c $(CWD)/shasums/R2_PKG.sha1
+	cd $(CWD)/R2_BUILD && tar xvf $(CWD)/R2_DISTS/$(R2_PKG.tgz) && touch $(CWD)/.R2_PKG.unpack
+
+.R2_PKG.env:
+	echo "export JAVA_HOME=$(pfx)/R2_DIR" > $(pfx)/etc/jdk.env && \
+	echo 'export PATH=$${PATH}:$${JAVA_HOME}/bin' >> $(pfx)/etc/jdk.env && \
+	touch $(CWD)/.R2_PKG.env
+
+.R2_PKG.install: .R2_PKG.unpack .R2_PKG.env
+	cd $(CWD)/R2_BUILD && \
+	cp -ra R2_DIR $(pfx)/ && \
+	touch $(CWD)/.R2_PKG.install

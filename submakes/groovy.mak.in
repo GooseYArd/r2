@@ -1,0 +1,27 @@
+define(`R2_PKG', `groovy')dnl
+define(`R2_VERSION', `2.1.1')dnl
+define(`R2_DIR', `R2_PKG-R2_VERSION')dnl
+define(`R2_DIST', `R2_PKG-binary-R2_VERSION.zip')dnl
+define(`R2_URL', `http://dist.groovy.codehaus.org/distributions/R2_DIST')dnl
+
+include(`r2.m4')
+
+R2_DECLS
+
+.R2_PKG.fetch:
+	cd R2_DISTS && wget -N $(R2_PKG.url)
+	touch -a $(CWD)/.R2_PKG.fetch
+
+.R2_PKG.unpack: .R2_PKG.fetch shasums/R2_PKG.sha1
+	cd $(CWD)/dists && sha1sum -c $(CWD)/shasums/R2_PKG.sha1
+	cd $(CWD)/R2_BUILD && unzip $(CWD)/R2_DISTS/R2_DIST && touch $(CWD)/.R2_PKG.unpack
+
+.R2_PKG.env:
+	echo "export GROOVY_HOME=$(pfx)/R2_DIR" > $(pfx)/etc/groovy.env && \
+	echo 'export PATH=$${PATH}:$${GROOVY_HOME}/bin' >> $(pfx)/etc/groovy.env && \
+	touch $(CWD)/.R2_PKG.env
+
+.R2_PKG.install: .R2_PKG.unpack .R2_PKG.env
+	cd $(CWD)/R2_BUILD && \
+	cp -ra R2_DIR $(pfx)/ && \
+	touch $(CWD)/.R2_PKG.install
